@@ -4,6 +4,7 @@ import AchievementInfinityStripCenteredNoBorders from "./components/AchievementI
 import AchievementStrip from "./components/AchievementStrip";
 import AchievementStripNoBorders from "./components/AchievementStripNoBorders";
 import StackedCardsReveal from "./components/StackedCardsReveal";
+import StackedCardsRevealHorizontal from "./components/StackedCardsRevealHorizontal";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
       <AchievementInfinityStrip />
       <AchievementInfinityStripCenteredNoBorders />
       <StackedCardsReveal />
+      <StackedCardsRevealHorizontal />
     </main>
   );
 }
