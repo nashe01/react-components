@@ -96,7 +96,7 @@ export default function AccordionCards() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f0f0ee] p-6 font-sans">
       <div
-        className="flex h-[420px] w-full max-w-[760px] gap-2.5"
+        className="flex h-[420px] w-full max-w-[760px] gap-5.5"
         onMouseLeave={() => setActiveIndex(0)}
       >
         {cards.map((card, index) => {
