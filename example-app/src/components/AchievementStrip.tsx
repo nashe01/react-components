@@ -20,7 +20,7 @@ const items: AchievementItem[] = [
 
 export default function AchievementStrip() {
   return (
-    <div className="w-full max-w-[900px] border-y border-[#e0e0e0] px-10 py-7">
+    <div className="mx-auto w-full max-w-[900px] border-y border-[#e0e0e0] px-10 py-7">
       <div className="flex items-center justify-between gap-6">
         {items.map((item, index) => (
           <div
