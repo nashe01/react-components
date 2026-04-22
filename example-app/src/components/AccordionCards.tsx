@@ -95,10 +95,7 @@ export default function AccordionCards() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f0f0ee] p-6 font-sans">
-      <div
-        className="flex h-[420px] w-full max-w-[760px] gap-5.5"
-        onMouseLeave={() => setActiveIndex(0)}
-      >
+      <div className="flex h-[420px] w-full max-w-[660px] gap-5.5">
         {cards.map((card, index) => {
           const isActive = activeIndex === index;
 
@@ -106,7 +103,7 @@ export default function AccordionCards() {
             <article
               key={card.title}
               onMouseEnter={() => setActiveIndex(index)}
-              className={`relative cursor-pointer overflow-hidden rounded-[20px] transition-[flex] duration-700 ease-[cubic-bezier(0.77,0,0.175,1)] ${
+              className={`relative cursor-pointer overflow-hidden rounded-[20px] transition-[flex] duration-600 ease-[cubic-bezier(0.77,0,0.175,1)] ${
                 isActive ? "flex-[3.5]" : "flex-[0.35]"
               }`}
             >
