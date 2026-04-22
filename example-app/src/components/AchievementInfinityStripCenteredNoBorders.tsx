@@ -44,7 +44,7 @@ export default function AchievementInfinityStripCenteredNoBorders() {
   const loopItems = [...items, ...items];
 
   return (
-    <div className="relative mx-auto w-full max-w-[980px] overflow-hidden py-6">
+    <div className="relative mx-auto w-full max-w-[980px] overflow-hidden bg-white py-6">
       <style>{`
         @keyframes achievementMarqueeCenteredNoBorders {
           from { transform: translateX(0); }

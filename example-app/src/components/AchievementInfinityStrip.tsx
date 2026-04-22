@@ -44,7 +44,7 @@ export default function AchievementInfinityStrip() {
   const loopItems = [...items, ...items];
 
   return (
-    <div className="relative w-full overflow-hidden border-y border-[#e0e0e0] py-6">
+    <div className="relative w-full overflow-hidden border-y border-[#e0e0e0] bg-white py-6">
       <style>{`
         @keyframes achievementMarquee {
           from { transform: translateX(0); }

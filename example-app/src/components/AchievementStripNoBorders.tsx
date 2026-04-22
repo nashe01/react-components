@@ -20,7 +20,7 @@ const items: AchievementItem[] = [
 
 export default function AchievementStripNoBorders() {
   return (
-    <div className="mx-auto w-full max-w-[900px] px-10 py-7">
+    <div className="mx-auto w-full max-w-[900px] bg-white px-10 py-7">
       <div className="flex items-center justify-between gap-6">
         {items.map((item, index) => (
           <div

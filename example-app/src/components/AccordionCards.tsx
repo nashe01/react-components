@@ -94,7 +94,7 @@ export default function AccordionCards() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f0f0ee] p-6 font-sans">
+    <div className="flex min-h-screen items-center justify-center bg-white p-6 font-sans">
       <div className="flex h-[420px] w-full max-w-[660px] gap-5.5">
         {cards.map((card, index) => {
           const isActive = activeIndex === index;
