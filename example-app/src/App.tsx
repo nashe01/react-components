@@ -1,5 +1,6 @@
 import AccordionCards from "./components/AccordionCards";
 import AchievementInfinityStrip from "./components/AchievementInfinityStrip";
+import AchievementInfinityStripCenteredNoBorders from "./components/AchievementInfinityStripCenteredNoBorders";
 import AchievementStrip from "./components/AchievementStrip";
 import AchievementStripNoBorders from "./components/AchievementStripNoBorders";
 
@@ -10,6 +11,7 @@ export default function App() {
       <AchievementStrip />
       <AchievementStripNoBorders />
       <AchievementInfinityStrip />
+      <AchievementInfinityStripCenteredNoBorders />
     </main>
   );
 }
