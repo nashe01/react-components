@@ -29,7 +29,11 @@ const cards: RevealCard[] = [
     title: "Adipiscing elit",
     text: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
   },
-
+  {
+    id: "c4",
+    title: "Eiusmod tempor",
+    text: "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  },
 ];
 
 function lerp(a: number, b: number, t: number) {
@@ -40,7 +44,6 @@ function easeInOutCubic(t: number) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-/** Pixel offset from viewport center (x) so card centers line up in one horizontal row, centered in the viewport. */
 function endOffsetsHorizontal(
   viewportWidth: number,
   widths: number[],
@@ -61,8 +64,8 @@ function endOffsetsHorizontal(
 
 function getCardDefs(viewportWidth: number): CardDef[] {
   let scale = Math.min(1, viewportWidth / 1100);
-  const baseW = [260, 275, 285, 250].slice(0, cards.length);
-  const baseH = [280, 300, 290, 260].slice(0, cards.length);
+  const baseW = Array.from({ length: cards.length }, () => 270);
+  const baseH = Array.from({ length: cards.length }, () => 290);
 
   const build = (s: number) => ({
     widths: baseW.map((v) => Math.round(v * s)),
@@ -103,7 +106,7 @@ function getCardDefs(viewportWidth: number): CardDef[] {
   }));
 }
 
-export default function StackedCardsRevealHorizontal() {
+export default function StackedCardsRevealHorizontalFourCards() {
   const [progress, setProgress] = useState(0);
   const [viewport, setViewport] = useState({ width: 1200, height: 900 });
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -114,7 +117,7 @@ export default function StackedCardsRevealHorizontal() {
     };
 
     const updateProgress = () => {
-      const driver = document.getElementById("stacked-cards-h-driver");
+      const driver = document.getElementById("stacked-cards-h-4-driver");
       if (!driver) return;
 
       const rect = driver.getBoundingClientRect();
@@ -146,8 +149,7 @@ export default function StackedCardsRevealHorizontal() {
     () => getCardDefs(viewport.width),
     [viewport.width],
   );
-  const middleIndex = Math.floor(cards.length / 2);
-  const activeZoomIndex = hoveredIndex ?? middleIndex;
+  const activeZoomIndex = hoveredIndex;
 
   const textOpacity = {
     title: 0.18 + 0.62 * progress,
@@ -156,7 +158,7 @@ export default function StackedCardsRevealHorizontal() {
 
   return (
     <section className="w-full bg-white text-black">
-      <div id="stacked-cards-h-driver" className="h-[300vh]">
+      <div id="stacked-cards-h-4-driver" className="h-[300vh]">
         <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-2">
             {cards.map((card, index) => {
@@ -164,7 +166,7 @@ export default function StackedCardsRevealHorizontal() {
               const ox = lerp(def.start.ox, def.end.ox, progress);
               const oy = lerp(def.start.oy, def.end.oy, progress);
               const rotation = lerp(def.start.r, def.end.r, progress);
-              const isActiveCard = index === activeZoomIndex;
+              const isActiveCard = activeZoomIndex !== null && index === activeZoomIndex;
               const scale = isActiveCard ? lerp(1, 1.1, progress) : 1;
               const activeShadowBoost = isActiveCard ? progress : 0;
               const left = viewport.width / 2 - def.width / 2 + ox;

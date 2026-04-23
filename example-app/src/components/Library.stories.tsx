@@ -6,6 +6,7 @@ import AchievementStrip from "./AchievementStrip";
 import AchievementStripNoBorders from "./AchievementStripNoBorders";
 import StackedCardsReveal from "./StackedCardsReveal";
 import StackedCardsRevealHorizontal from "./StackedCardsRevealHorizontal";
+import StackedCardsRevealHorizontalFourCards from "./StackedCardsRevealHorizontalFourCards";
 
 const meta = {
   title: "Components/Library",
@@ -51,4 +52,9 @@ export const StackedCardsRevealStory: Story = {
 export const StackedCardsRevealHorizontalStory: Story = {
   name: "Stacked Cards Reveal Horizontal",
   render: () => <StackedCardsRevealHorizontal />,
+};
+
+export const StackedCardsRevealHorizontalFourCardsStory: Story = {
+  name: "Stacked Cards Reveal Horizontal 4 Cards",
+  render: () => <StackedCardsRevealHorizontalFourCards />,
 };
