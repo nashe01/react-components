@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 type RevealCard = {
   id: string;
-  title: string;
-  text: string;
+  title: ReactNode;
+  description: ReactNode;
 };
 
 type CardDef = {
@@ -13,24 +13,32 @@ type CardDef = {
   end: { ox: number; oy: number; r: number; z: number };
 };
 
-const cards: RevealCard[] = [
+const defaultCards: RevealCard[] = [
   {
     id: "c1",
     title: "Lorem dolor",
-    text: "Sit amet consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    description:
+      "Sit amet consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
   },
   {
     id: "c2",
     title: "Amet consectetur",
-    text: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    description:
+      "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
   },
   {
     id: "c3",
     title: "Adipiscing elit",
-    text: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    description:
+      "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
   },
-
 ];
+
+const baseWidthPattern = [260, 275, 285, 250];
+const baseHeightPattern = [280, 300, 290, 260];
+
+const getRepeatedPattern = (pattern: number[], length: number) =>
+  Array.from({ length }, (_, index) => pattern[index % pattern.length]);
 
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
@@ -59,10 +67,10 @@ function endOffsetsHorizontal(
   return out;
 }
 
-function getCardDefs(viewportWidth: number): CardDef[] {
+function getCardDefs(viewportWidth: number, cardCount: number): CardDef[] {
   let scale = Math.min(1, viewportWidth / 1100);
-  const baseW = [260, 275, 285, 250].slice(0, cards.length);
-  const baseH = [280, 300, 290, 260].slice(0, cards.length);
+  const baseW = getRepeatedPattern(baseWidthPattern, cardCount);
+  const baseH = getRepeatedPattern(baseHeightPattern, cardCount);
 
   const build = (s: number) => ({
     widths: baseW.map((v) => Math.round(v * s)),
@@ -71,7 +79,7 @@ function getCardDefs(viewportWidth: number): CardDef[] {
 
   let { widths, heights } = build(scale);
   let gap = 34;
-  const gapCount = Math.max(0, cards.length - 1);
+  const gapCount = Math.max(0, cardCount - 1);
 
   for (let i = 0; i < 10; i++) {
     const total = widths.reduce((a, w) => a + w, 0) + gap * gapCount;
@@ -85,7 +93,7 @@ function getCardDefs(viewportWidth: number): CardDef[] {
   const endOy = 0;
   const endR = 0;
 
-  return cards.map((_, index) => ({
+  return Array.from({ length: cardCount }, (_, index) => ({
     width: widths[index],
     height: heights[index],
     start: {
@@ -103,7 +111,14 @@ function getCardDefs(viewportWidth: number): CardDef[] {
   }));
 }
 
-export default function StackedCardsRevealHorizontal() {
+export type StackedCardsRevealHorizontalProps = {
+  cards?: RevealCard[];
+};
+
+export default function StackedCardsRevealHorizontal({
+  cards: cardsProp = defaultCards,
+}: StackedCardsRevealHorizontalProps) {
+  const cards = cardsProp.length > 0 ? cardsProp : defaultCards;
   const [progress, setProgress] = useState(0);
   const [viewport, setViewport] = useState({ width: 1200, height: 900 });
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -143,8 +158,8 @@ export default function StackedCardsRevealHorizontal() {
   }, []);
 
   const cardDefs = useMemo(
-    () => getCardDefs(viewport.width),
-    [viewport.width],
+    () => getCardDefs(viewport.width, cards.length),
+    [viewport.width, cards.length],
   );
   const middleIndex = Math.floor(cards.length / 2);
   const activeZoomIndex = hoveredIndex ?? middleIndex;
@@ -194,12 +209,12 @@ export default function StackedCardsRevealHorizontal() {
                   >
                     {card.title}
                   </h3>
-                  <p
+                  <div
                     className="text-pretty text-[0.82rem] leading-[1.55] text-zinc-600"
                     style={{ opacity: textOpacity.body }}
                   >
-                    {card.text}
-                  </p>
+                    {card.description}
+                  </div>
                 </article>
               );
             })}

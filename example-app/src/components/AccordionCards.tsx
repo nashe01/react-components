@@ -1,34 +1,41 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
-type Card = {
-  title: string;
-  description: string;
-  image: string;
+export type AccordionCardItem = {
+  id: string;
+  title: ReactNode;
+  description: ReactNode;
+  imageSrc: string;
+  imageAlt?: string;
 };
 
-const cards: Card[] = [
+const defaultCards: AccordionCardItem[] = [
   {
+    id: "discover",
     title: "1. Discover",
     description:
       "We begin with in-depth discovery sessions to fully understand your brand, goals, and audience.",
-    image:
+    imageSrc:
       "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=900&auto=format&fit=crop",
+    imageAlt: "Team collaborating around a table",
   },
   {
+    id: "define",
     title: "2. Define",
     description:
       "We create a clear roadmap. It's strategy meets creativity to set the right foundation.",
-    image:
+    imageSrc:
       "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=900&auto=format&fit=crop",
+    imageAlt: "People planning in front of laptops",
   },
   {
+    id: "develop",
     title: "3. Develop",
     description:
       "Our engineers bring designs to life with clean, scalable, and performant code.",
-    image:
+    imageSrc:
       "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&auto=format&fit=crop",
+    imageAlt: "Developer workspace with code on screen",
   },
-
 ];
 
 function CardIcon({ index }: { index: number }) {
@@ -90,8 +97,21 @@ function CardIcon({ index }: { index: number }) {
   );
 }
 
-export default function AccordionCards() {
-  const [activeIndex, setActiveIndex] = useState(0);
+export type AccordionCardsProps = {
+  cards?: AccordionCardItem[];
+  initialActiveIndex?: number;
+};
+
+export default function AccordionCards({
+  cards: cardsProp = defaultCards,
+  initialActiveIndex = 0,
+}: AccordionCardsProps) {
+  const cards = cardsProp.length > 0 ? cardsProp : defaultCards;
+  const safeInitialIndex = Math.min(
+    Math.max(0, initialActiveIndex),
+    cards.length - 1,
+  );
+  const [activeIndex, setActiveIndex] = useState(safeInitialIndex);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-white p-6 font-sans">
@@ -101,7 +121,7 @@ export default function AccordionCards() {
 
           return (
             <article
-              key={card.title}
+              key={card.id}
               onMouseEnter={() => setActiveIndex(index)}
               className={`relative cursor-pointer overflow-hidden rounded-[20px] transition-[flex] duration-600 ease-[cubic-bezier(0.77,0,0.175,1)] ${
                 isActive ? "flex-[3.5]" : "flex-[0.35]"
@@ -111,7 +131,8 @@ export default function AccordionCards() {
                 className={`absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-[cubic-bezier(0.77,0,0.175,1)] ${
                   isActive ? "scale-105" : "scale-100"
                 }`}
-                style={{ backgroundImage: `url(${card.image})` }}
+                style={{ backgroundImage: `url(${card.imageSrc})` }}
+                aria-label={card.imageAlt ?? `Accordion card ${index + 1}`}
               />
               <div className="absolute inset-0 rounded-[inherit] bg-linear-to-t from-black/75 via-black/15 to-transparent" />
               <div className="absolute left-4 top-4 z-10">
@@ -132,13 +153,13 @@ export default function AccordionCards() {
                 >
                   {card.title}
                 </h3>
-                <p
+                <div
                   className={`max-w-[300px] text-[0.85rem] leading-normal transition-all duration-300 ${
                     isActive ? "translate-y-0 opacity-100 delay-280" : "translate-y-[10px] opacity-0"
                   }`}
                 >
                   {card.description}
-                </p>
+                </div>
               </div>
             </article>
           );
