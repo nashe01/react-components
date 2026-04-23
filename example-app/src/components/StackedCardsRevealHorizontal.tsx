@@ -61,8 +61,8 @@ function endOffsetsHorizontal(
 
 function getCardDefs(viewportWidth: number): CardDef[] {
   let scale = Math.min(1, viewportWidth / 1100);
-  const baseW = [220, 230, 235, 210];
-  const baseH = [280, 300, 290, 260];
+  const baseW = [260, 275, 285, 250].slice(0, cards.length);
+  const baseH = [280, 300, 290, 260].slice(0, cards.length);
 
   const build = (s: number) => ({
     widths: baseW.map((v) => Math.round(v * s)),
@@ -71,9 +71,10 @@ function getCardDefs(viewportWidth: number): CardDef[] {
 
   let { widths, heights } = build(scale);
   let gap = 34;
+  const gapCount = Math.max(0, cards.length - 1);
 
   for (let i = 0; i < 10; i++) {
-    const total = widths.reduce((a, w) => a + w, 0) + gap * 3;
+    const total = widths.reduce((a, w) => a + w, 0) + gap * gapCount;
     if (total <= viewportWidth - 32) break;
     scale *= 0.94;
     ({ widths, heights } = build(scale));
@@ -161,7 +162,9 @@ export default function StackedCardsRevealHorizontal() {
               const ox = lerp(def.start.ox, def.end.ox, progress);
               const oy = lerp(def.start.oy, def.end.oy, progress);
               const rotation = lerp(def.start.r, def.end.r, progress);
-              const scale = index === middleIndex ? lerp(1, 1.1, progress) : 1;
+              const isMiddleCard = index === middleIndex;
+              const scale = isMiddleCard ? lerp(1, 1.1, progress) : 1;
+              const middleShadowBoost = isMiddleCard ? progress : 0;
               const left = viewport.width / 2 - def.width / 2 + ox;
               const top = viewport.height / 2 - def.height / 2 + oy;
 
@@ -176,6 +179,9 @@ export default function StackedCardsRevealHorizontal() {
                     top: `${top}px`,
                     transform: `rotate(${rotation}deg) scale(${scale})`,
                     zIndex: def.start.z,
+                    boxShadow: isMiddleCard
+                      ? `0 ${Math.round(12 + 8 * middleShadowBoost)}px ${Math.round(44 + 8 * middleShadowBoost)}px rgba(0,0,0,${(0.14 + 0.1 * middleShadowBoost).toFixed(3)}), 0 ${Math.round(4 + 2 * middleShadowBoost)}px ${Math.round(14 + 4 * middleShadowBoost)}px rgba(0,0,0,${(0.08 + 0.05 * middleShadowBoost).toFixed(3)})`
+                      : undefined,
                   }}
                 >
                   <h3
