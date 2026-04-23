@@ -29,11 +29,7 @@ const cards: RevealCard[] = [
     title: "Adipiscing elit",
     text: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
   },
-  {
-    id: "c4",
-    title: "Sed eiusmod",
-    text: "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  },
+
 ];
 
 function lerp(a: number, b: number, t: number) {
@@ -74,14 +70,14 @@ function getCardDefs(viewportWidth: number): CardDef[] {
   });
 
   let { widths, heights } = build(scale);
-  let gap = 20;
+  let gap = 34;
 
   for (let i = 0; i < 10; i++) {
     const total = widths.reduce((a, w) => a + w, 0) + gap * 3;
     if (total <= viewportWidth - 32) break;
     scale *= 0.94;
     ({ widths, heights } = build(scale));
-    gap = Math.max(12, Math.round(gap * 0.9));
+    gap = Math.max(18, Math.round(gap * 0.9));
   }
 
   const endOx = endOffsetsHorizontal(viewportWidth, widths, gap);
@@ -148,11 +144,11 @@ export default function StackedCardsRevealHorizontal() {
     () => getCardDefs(viewport.width),
     [viewport.width],
   );
+  const middleIndex = Math.floor(cards.length / 2);
 
   const textOpacity = {
     title: 0.18 + 0.62 * progress,
     body: 0.22 + 0.6 * progress,
-    cta: 0.16 + 0.5 * progress,
   } as const;
 
   return (
@@ -165,6 +161,7 @@ export default function StackedCardsRevealHorizontal() {
               const ox = lerp(def.start.ox, def.end.ox, progress);
               const oy = lerp(def.start.oy, def.end.oy, progress);
               const rotation = lerp(def.start.r, def.end.r, progress);
+              const scale = index === middleIndex ? lerp(1, 1.1, progress) : 1;
               const left = viewport.width / 2 - def.width / 2 + ox;
               const top = viewport.height / 2 - def.height / 2 + oy;
 
@@ -177,14 +174,22 @@ export default function StackedCardsRevealHorizontal() {
                     height: `${def.height}px`,
                     left: `${left}px`,
                     top: `${top}px`,
-                    transform: `rotate(${rotation}deg)`,
+                    transform: `rotate(${rotation}deg) scale(${scale})`,
                     zIndex: def.start.z,
                   }}
                 >
-                  <h3 className="text-balance text-base font-semibold leading-snug tracking-tight text-zinc-900">
+                  <h3
+                    className="text-balance text-base font-semibold leading-snug tracking-tight text-zinc-900"
+                    style={{ opacity: textOpacity.title }}
+                  >
                     {card.title}
                   </h3>
-                  <p className="text-pretty text-[0.82rem] leading-[1.55] text-zinc-600">{card.text}</p>
+                  <p
+                    className="text-pretty text-[0.82rem] leading-[1.55] text-zinc-600"
+                    style={{ opacity: textOpacity.body }}
+                  >
+                    {card.text}
+                  </p>
                 </article>
               );
             })}
