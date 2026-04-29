@@ -1,9 +1,10 @@
-import MeetTheTeamSection from "./components/MeetTheTeamSection";
+
+import WiremitPaymentNetworkPage from "./components/WiremitPaymentNetworkPage";
 
 export default function App() {
   return (
-    <main className="min-h-screen bg-zinc-950">
-      <MeetTheTeamSection />
+    <main>
+      <WiremitPaymentNetworkPage />
     </main>
   );
 }

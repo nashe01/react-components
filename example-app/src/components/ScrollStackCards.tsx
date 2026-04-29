@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 
 type ScrollStackCard = {
   id: string;
-  eyebrow: string;
+  
   title: string;
   description: string;
+  imageUrl: string;
+  imageAlt: string;
   primaryCtaLabel: string;
   primaryCtaHref: string;
   secondaryCtaLabel?: string;
@@ -14,10 +16,11 @@ type ScrollStackCard = {
 const defaultCards: ScrollStackCard[] = [
   {
     id: "strategy",
-    eyebrow: "Phase 01",
-    title: "Define your launch strategy",
+    title: "Developers",
     description:
-      "Shape your positioning, audience, and rollout plan with a clear narrative your team can execute.",
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    imageUrl: "https://placehold.co/1200x800/022731/ffffff?text=Placeholder+Image+1",
+    imageAlt: "Placeholder image 1",
     primaryCtaLabel: "Book strategy call",
     primaryCtaHref: "#strategy",
     secondaryCtaLabel: "See framework",
@@ -25,10 +28,12 @@ const defaultCards: ScrollStackCard[] = [
   },
   {
     id: "design",
-    eyebrow: "Phase 02",
-    title: "Craft a message that converts",
+    
+    title: "Business",
     description:
-      "Turn ideas into concise copy blocks and visual direction your users understand in seconds.",
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio praesent libero sed cursus ante dapibus diam. Sed nisi nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum praesent mauris fusce nec tellus sed augue semper porta. Mauris massa vestibulum lacinia arcu eget nulla class aptent taciti sociosqu ad litora torquent.",
+    imageUrl: "https://placehold.co/1200x800/022731/ffffff?text=Placeholder+Image+2",
+    imageAlt: "Placeholder image 2",
     primaryCtaLabel: "Review messaging",
     primaryCtaHref: "#messaging",
     secondaryCtaLabel: "Get examples",
@@ -36,10 +41,12 @@ const defaultCards: ScrollStackCard[] = [
   },
   {
     id: "build",
-    eyebrow: "Phase 03",
-    title: "Build and ship with confidence",
+    
+    title: "Wimates",
     description:
-      "Ship faster with component-ready tasks, clear owners, and measurable release checkpoints.",
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sodales ligula in libero sed dignissim lacinia nunc. Curabitur tortor pellentesque nibh aenean quam in scelerisque sem at dolor. Maecenas mattis sed convallis tristique sem proin ut ligula vel nunc egestas porttitor. Morbi lectus risus iaculis vel suscipit quis luctus non massa.",
+    imageUrl: "https://placehold.co/1200x800/022731/ffffff?text=Placeholder+Image+3",
+    imageAlt: "Placeholder image 3",
     primaryCtaLabel: "Start implementation",
     primaryCtaHref: "#implementation",
     secondaryCtaLabel: "View timeline",
@@ -47,10 +54,12 @@ const defaultCards: ScrollStackCard[] = [
   },
   {
     id: "optimize",
-    eyebrow: "Phase 04",
-    title: "Optimize with real usage data",
+    
+    title: "Partners",
     description:
-      "Use post-launch signals to prioritize what matters and keep improving conversion over time.",
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam nec ante sed lacinia urna non tincidunt mattis tortor neque adipiscing diam. Aenean quam in scelerisque sem at dolor maecenas mattis sed convallis tristique sem. Proin ut ligula vel nunc egestas porttitor morbi lectus risus. Cras mattis consectetur purus sit amet fermentum donec ullamcorper nulla non metus.",
+    imageUrl: "https://placehold.co/1200x800/022731/ffffff?text=Placeholder+Image+4",
+    imageAlt: "Placeholder image 4",
     primaryCtaLabel: "Open analytics plan",
     primaryCtaHref: "#analytics",
     secondaryCtaLabel: "Talk to expert",
@@ -58,14 +67,29 @@ const defaultCards: ScrollStackCard[] = [
   },
   {
     id: "scale",
-    eyebrow: "Phase 05",
-    title: "Scale your next growth chapter",
+    
+    title: "Country and currency",
     description:
-      "Move from one successful release to a repeatable growth system supported by your team.",
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum id ligula porta felis euismod semper aenean lacinia bibendum nulla sed consectetur. Donec sed odio dui nullam quis risus eget urna mollis ornare vel eu leo. Etiam porta sem malesuada magna mollis euismod. Cras justo odio dapibus ac facilisis in egestas eget quam.",
+    imageUrl: "https://placehold.co/1200x800/022731/ffffff?text=Placeholder+Image+5",
+    imageAlt: "Placeholder image 5",
     primaryCtaLabel: "Plan next quarter",
     primaryCtaHref: "#quarter",
     secondaryCtaLabel: "Download checklist",
     secondaryCtaHref: "#checklist",
+  },
+  {
+    id: "retention",
+    
+    title: "carriers",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent commodo cursus magna vel scelerisque nisl consectetur et. Donec ullamcorper nulla non metus auctor fringilla aenean eu leo quam pellentesque ornare. Maecenas faucibus mollis interdum sed posuere consectetur est at lobortis. Aenean lacinia bibendum nulla sed consectetur donec id elit non mi porta.",
+    imageUrl: "https://placehold.co/1200x800/022731/ffffff?text=Placeholder+Image+6",
+    imageAlt: "Placeholder image 6",
+    primaryCtaLabel: "Improve retention",
+    primaryCtaHref: "#retention",
+    secondaryCtaLabel: "See lifecycle map",
+    secondaryCtaHref: "#lifecycle",
   },
 ];
 
@@ -130,50 +154,64 @@ export default function ScrollStackCards({ cards: cardsProp }: ScrollStackCardsP
   const steps = cards.length > 1 ? cards.length - 1 : 1;
   const stackPeekY = 14;
 
+  const renderCardBody = (card: ScrollStackCard) => (
+    <div className="ssc-card-grid">
+      <div className="ssc-card-content">
+        <div className="ssc-copy-block">
+
+          <h3 className="ssc-title">
+            {card.title}
+          </h3>
+          <p className="ssc-description">
+            {card.description}
+          </p>
+        </div>
+        <div className="ssc-cta-row">
+          <a
+            className="ssc-cta ssc-cta-primary"
+            href={card.primaryCtaHref}
+          >
+            {card.primaryCtaLabel}
+          </a>
+          {card.secondaryCtaLabel && card.secondaryCtaHref ? (
+            <a
+              className="ssc-cta ssc-cta-secondary"
+              href={card.secondaryCtaHref}
+            >
+              {card.secondaryCtaLabel}
+            </a>
+          ) : null}
+        </div>
+      </div>
+      <div className="ssc-image-wrap">
+        <img
+          src={card.imageUrl}
+          alt={card.imageAlt}
+          className="ssc-image"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  );
+
   return (
-    <section className="w-full bg-emerald-50 text-zinc-900">
+    <section className="ssc-root">
       
 
-      <div id="scroll-stack-cards-driver" className="relative h-[900vh]">
-        <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden px-4">
+      <div id="scroll-stack-cards-driver" className="ssc-driver">
+        <div className="ssc-sticky">
           {cards.map((card, index) => {
             if (index === 0) {
               return (
                 <article
                   key={card.id}
-                  className="absolute h-[50vh] min-h-[360px] w-[80vw] max-w-[1200px] rounded-2xl border border-zinc-200 bg-white p-6 shadow-[0_12px_36px_rgba(0,0,0,0.12)] md:p-8"
+                  className="ssc-card"
                   style={{
                     transform: `translateY(${(cards.length - 1) * stackPeekY}px)`,
                     zIndex: cards.length,
                   }}
                 >
-                  <div className="space-y-4">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-emerald-700">
-                      {card.eyebrow}
-                    </p>
-                    <h3 className="text-balance font-serif text-3xl font-light text-zinc-900 md:text-4xl">
-                      {card.title}
-                    </h3>
-                    <p className="text-pretty text-sm leading-7 text-zinc-600 md:text-base">
-                      {card.description}
-                    </p>
-                  </div>
-                  <div className="mt-6 flex flex-wrap gap-3">
-                    <a
-                      className="rounded-full bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800"
-                      href={card.primaryCtaHref}
-                    >
-                      {card.primaryCtaLabel}
-                    </a>
-                    {card.secondaryCtaLabel && card.secondaryCtaHref ? (
-                      <a
-                        className="rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-zinc-700 transition-colors hover:border-zinc-400 hover:text-zinc-900"
-                        href={card.secondaryCtaHref}
-                      >
-                        {card.secondaryCtaLabel}
-                      </a>
-                    ) : null}
-                  </div>
+                  {renderCardBody(card)}
                 </article>
               );
             }
@@ -189,45 +227,149 @@ export default function ScrollStackCards({ cards: cardsProp }: ScrollStackCardsP
             return (
               <article
                 key={card.id}
-                className="absolute h-[50vh] min-h-[360px] w-[80vw] max-w-[1200px] rounded-2xl border border-zinc-200 bg-white p-6 shadow-[0_12px_36px_rgba(0,0,0,0.12)] md:p-8"
+                className="ssc-card"
                 style={{
                   transform: `translateY(${translateY}px) scale(${scale})`,
                   opacity,
                   zIndex: cards.length + index,
                 }}
               >
-                <div className="space-y-4">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-emerald-700">
-                    {card.eyebrow}
-                  </p>
-                  <h3 className="text-balance font-serif text-3xl font-light text-zinc-900 md:text-4xl">
-                    {card.title}
-                  </h3>
-                  <p className="text-pretty text-sm leading-7 text-zinc-600 md:text-base">
-                    {card.description}
-                  </p>
-                </div>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <a
-                    className="rounded-full bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800"
-                    href={card.primaryCtaHref}
-                  >
-                    {card.primaryCtaLabel}
-                  </a>
-                  {card.secondaryCtaLabel && card.secondaryCtaHref ? (
-                    <a
-                      className="rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-zinc-700 transition-colors hover:border-zinc-400 hover:text-zinc-900"
-                      href={card.secondaryCtaHref}
-                    >
-                      {card.secondaryCtaLabel}
-                    </a>
-                  ) : null}
-                </div>
+                {renderCardBody(card)}
               </article>
             );
           })}
         </div>
       </div>
+      <style>{`
+        .ssc-root {
+          width: 100%;
+          background: #ecfdf5;
+          color: #18181b;
+        }
+        .ssc-driver {
+          position: relative;
+          height: 900vh;
+        }
+        .ssc-sticky {
+          position: sticky;
+          top: 0;
+          display: flex;
+          height: 100vh;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          padding: 0 1rem;
+        }
+        .ssc-card {
+          position: absolute;
+          height: 50vh;
+          min-height: 360px;
+          width: 80vw;
+          max-width: 1200px;
+          border-radius: 1rem;
+          border: 1px solid #e4e4e7;
+          background: #fff;
+          padding: 1.5rem;
+          box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+        }
+        .ssc-card-grid {
+          display: grid;
+          height: 100%;
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+        .ssc-card-content {
+          display: flex;
+          height: 100%;
+          flex-direction: column;
+          justify-content: space-between;
+          padding-top: 1rem;
+        }
+        .ssc-copy-block {
+          display: grid;
+          gap: 1rem;
+        }
+        .ssc-title {
+          text-wrap: balance;
+          font-family: Georgia, serif;
+          font-size: 1.875rem;
+          font-weight: 300;
+          color: #18181b;
+          margin: 0;
+        }
+        .ssc-description {
+          text-wrap: pretty;
+          margin: 0;
+          font-size: 0.875rem;
+          line-height: 1.75rem;
+          color: #52525b;
+        }
+        .ssc-cta-row {
+          margin-top: 1.5rem;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+        }
+        .ssc-cta {
+          border-radius: 999px;
+          padding: 0.625rem 1.25rem;
+          font-size: 0.875rem;
+          font-weight: 600;
+          text-decoration: none;
+          transition: all 160ms ease;
+        }
+        .ssc-cta-primary {
+          background: #047857;
+          color: #fff;
+        }
+        .ssc-cta-primary:hover {
+          background: #065f46;
+        }
+        .ssc-cta-secondary {
+          border: 1px solid #d4d4d8;
+          color: #3f3f46;
+        }
+        .ssc-cta-secondary:hover {
+          border-color: #a1a1aa;
+          color: #18181b;
+        }
+        .ssc-image-wrap {
+          position: relative;
+          height: 170px;
+          overflow: hidden;
+          border-radius: 1rem;
+          background: #e4e4e7;
+        }
+        .ssc-image {
+          height: 100%;
+          width: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        @media (min-width: 768px) {
+          .ssc-card {
+            padding: 2rem;
+          }
+          .ssc-card-grid {
+            grid-template-columns: 1.35fr 0.65fr;
+            gap: 2rem;
+          }
+          .ssc-card-content {
+            padding-top: 1.5rem;
+          }
+          .ssc-title {
+            font-size: 2.25rem;
+          }
+          .ssc-description {
+            font-size: 1rem;
+          }
+          .ssc-image-wrap {
+            margin-left: -2rem;
+            height: 100%;
+            min-height: 220px;
+          }
+        }
+      `}</style>
     </section>
   );
 }

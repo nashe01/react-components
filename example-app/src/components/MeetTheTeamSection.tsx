@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Profile = {
   id: string;
@@ -47,46 +47,6 @@ const profiles: Profile[] = [
     role: "Chief Business Officer",
     bio: "Zuzanna combines deep expertise in biotechnology with a strong track record in business development and venture. Prior to joining Integrated, she served as Senior Director of Corporate Business Development at Eli Lilly & Company, where she executed a broad range of deals, including licensing agreements, strategic collaborations, equity investments, and M&A transactions. Earlier, she worked in pharma and biotech equity research at Goldman Sachs and co-founded a Y Combinator-backed biotech company, serving as its CEO. Zuzanna holds degrees in neuroscience and biological sciences from Cambridge University and Oxford University.",
     linkedin: "https://www.linkedin.com/in/zuzannabrzosko/",
-  },
-  {
-    id: "collins",
-    img: "https://integratedbio.com/wp-content/uploads/2025/09/Collins-2.jpg",
-    name: "Jim Collins, PhD",
-    role: "Scientific Co-founder & SAB Chair, Professor at MIT",
-    bio: "Jim holds the Termeer Professorship at MIT and appointments in biological engineering and at the Harvard-MIT Health Sciences & Technology program. He is a founding faculty member of the Wyss Institute and an institute member at the Broad Institute. His patented technologies have been licensed by over 25 biotech, pharmaceutical, and medical device companies. Jim has received numerous prestigious awards, including a MacArthur Genius Award and the Dickson Prize in Medicine.",
-    linkedin: null,
-  },
-  {
-    id: "macmillan",
-    img: "https://integratedbio.com/wp-content/uploads/2025/09/macmillan.jpg",
-    name: "David MacMillan, PhD",
-    role: "Professor at Princeton & 2021 Nobel Prize in Chemistry",
-    bio: "Dave is the James S. McDonnell Distinguished University Professor of Chemistry at Princeton University. He joined Princeton in 2006 as the A. Barton Hepburn Professor and served as Department Chair from 2010 to 2015. In 2021, he was awarded the Nobel Prize in Chemistry, shared with Benjamin List, for the development of asymmetric organocatalysis.",
-    linkedin: "https://www.linkedin.com/in/david-macmillan-47662914",
-  },
-  {
-    id: "young",
-    img: "https://integratedbio.com/wp-content/uploads/2025/09/09613-feature5-youngcxd_Widescreen.jpeg",
-    name: "Wendy Young, PhD",
-    role: "Former SVP of Small Molecule Discovery at Genentech",
-    bio: "Wendy is a seasoned biotech and pharma executive with over 30 years of experience in drug discovery and development. She serves as a board member and scientific advisor at several private and public biotechs and is a senior advisor at Google Ventures. As former SVP at Genentech (2006-2021), she led the advancement of 25+ clinical candidates into development. She led the research team and co-invented fenebrutinib (Phase 3), and has authored or been named an inventor on 70+ publications and patents.",
-    linkedin: "https://www.linkedin.com/in/wendy-young-ph-d-65a1572",
-  },
-  {
-    id: "alon",
-    img: "https://integratedbio.com/wp-content/uploads/2025/09/weizmann.elsevierpure.jpg",
-    name: "Uri Alon, PhD",
-    role: "Professor at the Weizmann Institute of Science",
-    bio: "Uri is a Professor at the Weizmann Institute of Science, widely recognized as a pioneer in systems biology, particularly in the biology of aging. His research combines computational modeling with experimental biology to uncover the design principles of gene regulation, network motifs, and the architecture of complex biological systems. He has received honors including the IBM Faculty Award, Overton Prize, and Teva Founders Prize. Uri holds degrees from Hebrew University and from Weizmann.",
-    linkedin: "https://il.linkedin.com/in/urialonw",
-  },
-  {
-    id: "tony",
-    img: "https://integratedbio.com/wp-content/uploads/2025/10/tonywu-e1759440058542.jpg",
-    name: "Yuhuai (Tony) Wu, PhD",
-    role: "Co-founder of xAI",
-    bio: "Tony co-founded xAI together with a team including Elon Musk, Igor Babuschkin, Jimmy Ba, Greg Yang, and Christian Szegedy. At xAI, Tony led the organization in pre- and post-training Grok and applying Grok for expert reasoning tasks. His research spans all aspects of AI, including reasoning, STaR, Minera, AlphaGeometry, AlphaStar, and memorizing transformers, and has been pivotal to the development of large language models and reasoning models.",
-    linkedin: "https://www.linkedin.com/in/yuhuai-tony-wu-02a641b5/",
   },
 ];
 
@@ -170,6 +130,10 @@ const getProfile = (id: string) => profiles.find((profile) => profile.id === id)
 
 export default function MeetTheTeamSection() {
   const [activeProfile, setActiveProfile] = useState<Profile | null>(null);
+  const [teamIndex, setTeamIndex] = useState(0);
+  const [teamSlidesPerView, setTeamSlidesPerView] = useState(4);
+  const [teamStepPx, setTeamStepPx] = useState(0);
+  const teamTrackRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const onEscape = (event: KeyboardEvent) => {
@@ -181,122 +145,261 @@ export default function MeetTheTeamSection() {
     return () => document.removeEventListener("keydown", onEscape);
   }, []);
 
-  return (
-    <div className="meet-team-root">
-      <div className="section">
-        <div className="section-label">Meet the Team</div>
+  useEffect(() => {
+    const updateSlidesPerView = () => {
+      if (window.innerWidth <= 600) {
+        setTeamSlidesPerView(1);
+        return;
+      }
+      if (window.innerWidth <= 900) {
+        setTeamSlidesPerView(2);
+        return;
+      }
+      setTeamSlidesPerView(4);
+    };
 
-        <div className="leadership-layout">
-          <div className="leadership-intro">
-            <div className="subsection-title">Leadership</div>
-            <p className="subsection-desc">
-              Our leadership team embodies our mission, combining expertise in
-              synthetic biology, chemistry and AI to transform human health and
-              aging.
-            </p>
+    updateSlidesPerView();
+    window.addEventListener("resize", updateSlidesPerView);
+    return () => window.removeEventListener("resize", updateSlidesPerView);
+  }, []);
+
+  useEffect(() => {
+    const updateTeamStep = () => {
+      const firstCard = teamTrackRef.current?.querySelector(
+        ".team-member",
+      ) as HTMLElement | null;
+      if (!firstCard) return;
+      setTeamStepPx(firstCard.getBoundingClientRect().width + 12);
+    };
+
+    updateTeamStep();
+    window.addEventListener("resize", updateTeamStep);
+    return () => window.removeEventListener("resize", updateTeamStep);
+  }, [teamSlidesPerView]);
+
+  const maxTeamIndex = Math.max(0, teamMembers.length - teamSlidesPerView);
+
+  useEffect(() => {
+    setTeamIndex((current) => Math.min(current, maxTeamIndex));
+  }, [maxTeamIndex]);
+
+  const handleTeamPrev = () => {
+    setTeamIndex((current) => Math.max(0, current - 1));
+  };
+
+  const handleTeamNext = () => {
+    setTeamIndex((current) => Math.min(maxTeamIndex, current + 1));
+  };
+
+  return (
+    <div className="bg-[#f9f8f6] font-['Georgia',serif] text-[#1a1a1a]">
+      <div className="mx-auto max-w-[1100px] px-8 py-20 max-[600px]:px-5">
+        <div className="mx-[calc(50%-48vw)] w-[96vw] bg-[#f0eeea] px-10 py-14 max-[900px]:px-5 max-[900px]:py-10">
+          <div className="grid grid-cols-[380px_minmax(0,1fr)] items-start gap-[34px] max-[900px]:grid-cols-1 max-[900px]:gap-5">
+            <div>
+              <div className="mb-[18px] flex min-w-[120px] items-center gap-2">
+                <div className="h-[14px] w-[14px] shrink-0 rounded-[2px] bg-[#9de05a]" />
+                <span className="font-['Helvetica_Neue',Arial,sans-serif] text-[17px] font-medium uppercase tracking-[0.12em] text-[#888]">
+                  Leadership
+                </span>
+              </div>
+              <p className="max-w-[680px] text-[18px] leading-[1.65] text-[#555]">
+                Our leadership team embodies our mission, combining expertise in
+                synthetic biology, chemistry and AI to transform human health and
+                aging.
+              </p>
+            </div>
+
+            <div className="ml-20 mr-auto grid w-fit grid-cols-2 gap-y-3 gap-x-3">
+              {leadershipIds.map((id) => {
+                const profile = getProfile(id);
+                if (!profile) return null;
+                return (
+                  <div
+                    key={profile.id}
+                    className="group max-w-[420px] cursor-pointer overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.45)] bg-[rgba(255,255,255,0.38)] [backdrop-filter:blur(14px)] transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-1.5 hover:border-[rgba(255,255,255,0.6)] hover:shadow-[0_22px_40px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.35)]"
+                    onClick={() => setActiveProfile(profile)}
+                  >
+                    <div className="relative overflow-hidden px-[9px] pt-[9px]">
+                      <img
+                        src={profile.img}
+                        alt={profile.name}
+                        className="block aspect-[1.45/1] w-full rounded-xl object-cover transition-[transform,filter] duration-200 [filter:grayscale(0.6)_saturate(0.8)_contrast(1.05)] group-hover:scale-[1.03] group-hover:[filter:grayscale(0.45)_saturate(0.95)_contrast(1.08)]"
+                        onError={(event) => {
+                          const target = event.currentTarget;
+                          target.onerror = null;
+                          target.src =
+                            "https://placehold.co/300x400/e8e4dc/888?text=Photo";
+                        }}
+                      />
+                      {profile.linkedin ? (
+                        <a
+                          href={profile.linkedin}
+                          className="absolute bottom-[10px] right-[18px] inline-flex h-6 w-6 items-center justify-center rounded-md bg-[#111] text-[12px] font-bold text-white no-underline"
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(event) => event.stopPropagation()}
+                          aria-label={`${profile.name} LinkedIn`}
+                        >
+                          in
+                        </a>
+                      ) : null}
+                    </div>
+
+                    <div className="px-[14px] pt-[14px]">
+                      <div className="font-['Helvetica_Neue',Arial,sans-serif] text-[24px] font-medium leading-none tracking-[-0.02em] text-[#1a1a1a]">
+                        {profile.name}
+                      </div>
+                      <div className="mb-[18px] mt-2 font-['Helvetica_Neue',Arial,sans-serif] text-[10px] uppercase tracking-[0.12em] text-[#8b8b8b]">
+                        {profile.role}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-[#ebebeb] pb-2 pt-3">
+                      <span className="ml-4 font-['Helvetica_Neue',Arial,sans-serif] text-[11px] font-medium uppercase tracking-[0.08em] text-[#1a1a1a]">
+                        View profile
+                      </span>
+                      <span
+                        className="mr-0 inline-flex h-[34px] w-[34px] items-center justify-center rounded-[10px_0_0_10px] bg-[#c8f26b] text-base font-semibold text-[#1a1a1a] transition-all duration-200 group-hover:translate-x-0.5 group-hover:bg-[#b8ea49]"
+                        aria-hidden="true"
+                      >
+                        &rarr;
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <hr className="my-16 border-0 border-t border-[#ddd]" />
+
+        <div className="mx-[calc(50%-48vw)] w-[96vw] bg-[#f0eeea] px-10 py-14 max-[600px]:px-5 max-[600px]:py-10">
+          <div className="mb-[68px] grid grid-cols-[auto_minmax(0,1fr)] items-start gap-12 max-[900px]:grid-cols-1 max-[900px]:gap-5">
+            <div className="flex min-w-[120px] items-center gap-2">
+              <div className="h-[14px] w-[14px] shrink-0 rounded-[2px] bg-[#9de05a]" />
+              <span className="font-['Helvetica_Neue',Arial,sans-serif] text-[20px] font-medium uppercase tracking-[0.12em] text-[#888]">
+                Team
+              </span>
+            </div>
+            <h2 className="w-full max-w-[640px] justify-self-center font-['Helvetica_Neue',Arial,sans-serif] text-[34px] font-normal leading-[1.2] text-[#1a1a1a] max-[900px]:text-[24px]">
+              Our team thrives on bold ideas, challenges conventional thinking,
+              and shapes how transformative medicines are discovered.
+            </h2>
           </div>
 
-          <div className="leadership-grid">
-            {leadershipIds.map((id) => {
-              const profile = getProfile(id);
-              if (!profile) return null;
-              return (
-                <div
-                  key={profile.id}
-                  className="leader-card leader-card-v2"
-                  onClick={() => setActiveProfile(profile)}
-                >
-                  <div className="leader-photo-wrap">
-                    <img
-                      src={profile.img}
-                      alt={profile.name}
-                      onError={(event) => {
-                        const target = event.currentTarget;
-                        target.onerror = null;
-                        target.src =
-                          "https://placehold.co/300x400/e8e4dc/888?text=Photo";
-                      }}
-                    />
-                    {profile.linkedin ? (
+          <div className="relative">
+            <div className="overflow-hidden">
+              <div
+                ref={teamTrackRef}
+                className="team-grid flex gap-3 transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                style={{
+                  transform: `translateX(-${teamIndex * teamStepPx}px)`,
+                }}
+              >
+                {teamMembers.map((member) => (
+                  <article
+                    key={member.name}
+                    className="team-member flex min-h-[220px] min-w-[calc(25%-9px)] flex-col justify-between overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.45)] bg-[rgba(255,255,255,0.38)] p-6 [backdrop-filter:blur(14px)] max-[900px]:min-w-[calc(50%-6px)] max-[600px]:min-w-full"
+                  >
+                    <div className="flex-1">
+                      <div className="font-['Helvetica_Neue',Arial,sans-serif] text-[18px] font-medium leading-[1.35] text-[#1a1a1a]">
+                        {member.name}
+                      </div>
+                      <div className="mt-1.5 font-['Helvetica_Neue',Arial,sans-serif] text-[11px] font-medium uppercase tracking-[0.1em] text-[#8c8c8c]">
+                        {member.role}
+                      </div>
+                    </div>
+                    <div className="mt-8 flex items-center justify-between">
                       <a
-                        href={profile.linkedin}
-                        className="leader-linkedin-badge"
+                        className="font-['Helvetica_Neue',Arial,sans-serif] text-[11px] font-medium uppercase tracking-[0.1em] text-[#888] no-underline"
+                        href={member.linkedin}
                         target="_blank"
                         rel="noreferrer"
-                        onClick={(event) => event.stopPropagation()}
-                        aria-label={`${profile.name} LinkedIn`}
                       >
-                        in
+                        LinkedIn
                       </a>
-                    ) : null}
-                  </div>
-
-                  <div className="leader-card-body">
-                    <div className="leader-name">{profile.name}</div>
-                    <div className="leader-title">{profile.role}</div>
-                  </div>
-
-                  <div className="leader-card-footer">
-                    <span className="view-profile">View profile</span>
-                    <span className="leader-arrow" aria-hidden="true">
-                      &rarr;
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+                      <a
+                        className="inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] bg-[#9de05a] no-underline"
+                        href={member.linkedin}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`${member.name} LinkedIn`}
+                      >
+                        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <path
+                            d="M3 8h10M9 4l4 4-4 4"
+                            stroke="#1a1a1a"
+                            strokeWidth="1"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </a>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+            <div
+              className="mt-5 flex justify-end gap-2"
+              role="group"
+              aria-label="Team carousel navigation"
+            >
+              <button
+                type="button"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-[#ccc] bg-white text-[#1a1a1a] transition hover:bg-[#f0eeea] disabled:cursor-default disabled:opacity-30"
+                onClick={handleTeamPrev}
+                disabled={teamIndex === 0}
+                aria-label="Previous team members"
+              >
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path
+                    d="M10 12L6 8l4-4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-[#ccc] bg-white text-[#1a1a1a] transition hover:bg-[#f0eeea] disabled:cursor-default disabled:opacity-30"
+                onClick={handleTeamNext}
+                disabled={teamIndex >= maxTeamIndex}
+                aria-label="Next team members"
+              >
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path
+                    d="M6 4l4 4-4 4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
-        <hr className="divider" />
-
-        <div className="subsection-title" style={{ marginBottom: "6px" }}>
-          Team
-        </div>
-        <p className="subsection-desc">
-          Our team thrives on bold ideas, challenges conventional thinking, and
-          shapes how transformative medicines are discovered.
-        </p>
-
-        <div className="team-grid">
-          {teamMembers.map((member) => (
-            <div key={member.name} className="team-member">
-              <div className="team-info">
-                <div className="team-name">{member.name}</div>
-                <div className="team-role">{member.role}</div>
-                <a
-                  className="team-linkedin"
-                  href={member.linkedin}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  LinkedIn
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <hr className="divider" />
-
-        <div className="subsection-title" style={{ marginBottom: "32px" }}>
-          Scientific Advisory Board
-        </div>
-
-        <div className="sab-grid">
+        <div className="grid grid-cols-5 gap-6 max-[900px]:grid-cols-3 max-[600px]:grid-cols-2">
           {sabIds.map((id) => {
             const profile = getProfile(id);
             if (!profile) return null;
             return (
               <div
                 key={profile.id}
-                className="sab-card"
+                className="cursor-pointer rounded-[14px] border border-[rgba(255,255,255,0.45)] bg-[rgba(255,255,255,0.34)] p-[14px] [backdrop-filter:blur(12px)]"
                 onClick={() => setActiveProfile(profile)}
               >
-                <div className="sab-photo-wrap">
+                <div>
                   <img
                     src={profile.img}
                     alt={profile.name}
+                    className="mb-3 block aspect-square w-full object-cover"
                     onError={(event) => {
                       const target = event.currentTarget;
                       target.onerror = null;
@@ -305,9 +408,15 @@ export default function MeetTheTeamSection() {
                     }}
                   />
                 </div>
-                <div className="sab-name">{profile.name}</div>
-                <div className="sab-title">{profile.role}</div>
-                <span className="view-profile">View profile</span>
+                <div className="font-['Helvetica_Neue',Arial,sans-serif] text-[13px] font-semibold text-[#1a1a1a]">
+                  {profile.name}
+                </div>
+                <div className="mb-2 mt-[3px] font-['Helvetica_Neue',Arial,sans-serif] text-[11px] leading-[1.4] text-[#888]">
+                  {profile.role}
+                </div>
+                <span className="cursor-pointer font-['Helvetica_Neue',Arial,sans-serif] text-[11px] font-medium uppercase tracking-[0.08em] text-[#1a1a1a]">
+                  View profile
+                </span>
               </div>
             );
           })}
@@ -315,7 +424,7 @@ export default function MeetTheTeamSection() {
       </div>
 
       <div
-        className={`modal-overlay ${activeProfile ? "open" : ""}`}
+        className={`fixed inset-0 z-[100] flex items-stretch justify-end bg-[rgba(8,13,16,0.55)] p-0 transition-[opacity,visibility] duration-[260ms] ${activeProfile ? "visible pointer-events-auto opacity-100" : "invisible pointer-events-none opacity-0"}`}
         onClick={(event) => {
           if (event.target === event.currentTarget) {
             setActiveProfile(null);
@@ -323,17 +432,20 @@ export default function MeetTheTeamSection() {
         }}
       >
         <button
-          className="modal-close"
+          className={`fixed right-[min(428px,calc(100vw-8px))] top-[10px] z-[101] inline-flex h-9 w-9 items-center justify-center rounded-[11px] border-0 bg-[#bdf06a] text-[19px] leading-none text-[#1d261b] transition-[transform,opacity] duration-300 max-[600px]:right-3 max-[600px]:top-2 ${activeProfile ? "translate-x-0 opacity-100" : "translate-x-[14px] opacity-0"}`}
           onClick={() => setActiveProfile(null)}
           aria-label="Close profile modal"
         >
           &#x2715;
         </button>
-        <div className="modal">
-          <div className="modal-img">
+        <div
+          className={`h-screen w-full max-w-[420px] overflow-y-auto border-l border-[rgba(193,220,228,0.2)] bg-[linear-gradient(145deg,rgba(30,50,57,0.94),rgba(24,38,43,0.95))] p-[14px_18px_26px] shadow-[-14px_0_40px_rgba(0,0,0,0.38)] transition-[transform,opacity] duration-[340ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] max-[600px]:p-[12px_12px_24px] ${activeProfile ? "translate-x-0 opacity-100" : "translate-x-[18px] opacity-0"}`}
+        >
+          <div className="w-full">
             <img
               src={activeProfile?.img ?? ""}
               alt={activeProfile?.name ?? ""}
+              className={`block aspect-[1.45/1] w-full rounded-[14px] object-cover transition-[opacity,transform] duration-[520ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${activeProfile ? "translate-y-0 scale-100 opacity-100" : "translate-y-3 scale-[0.985] opacity-0"}`}
               onError={(event) => {
                 const target = event.currentTarget;
                 target.onerror = null;
@@ -341,13 +453,29 @@ export default function MeetTheTeamSection() {
               }}
             />
           </div>
-          <div className="modal-body">
-            <div className="modal-name">{activeProfile?.name ?? ""}</div>
-            <div className="modal-role">{activeProfile?.role ?? ""}</div>
-            <p className="modal-bio">{activeProfile?.bio ?? ""}</p>
+          <div className="px-[2px] pt-[18px]">
+            <div
+              className={`font-['Helvetica_Neue',Arial,sans-serif] text-[35px] font-medium leading-none tracking-[-0.02em] text-[#f4f7f8] max-[600px]:text-[29px] transition-[opacity,transform] duration-[560ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${activeProfile ? "translate-y-0 opacity-100" : "translate-y-[14px] opacity-0"}`}
+              style={{ transitionDelay: activeProfile ? "520ms" : "0ms" }}
+            >
+              {activeProfile?.name ?? ""}
+            </div>
+            <div
+              className={`mb-5 mt-2 font-['Helvetica_Neue',Arial,sans-serif] text-[11px] uppercase tracking-[0.12em] text-[rgba(216,229,233,0.76)] transition-[opacity,transform] duration-[560ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${activeProfile ? "translate-y-0 opacity-100" : "translate-y-[14px] opacity-0"}`}
+              style={{ transitionDelay: activeProfile ? "700ms" : "0ms" }}
+            >
+              {activeProfile?.role ?? ""}
+            </div>
+            <p
+              className={`mb-6 font-['Helvetica_Neue',Arial,sans-serif] text-[16px] font-medium leading-[1.4] text-[#f2f8fa] transition-[opacity,transform] duration-[560ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${activeProfile ? "translate-y-0 opacity-100" : "translate-y-[14px] opacity-0"}`}
+              style={{ transitionDelay: activeProfile ? "860ms" : "0ms" }}
+            >
+              {activeProfile?.bio ?? ""}
+            </p>
             {activeProfile?.linkedin ? (
               <a
-                className="modal-linkedin"
+                className={`font-['Helvetica_Neue',Arial,sans-serif] text-[12px] font-semibold uppercase tracking-[0.08em] text-[#f2f8fa] no-underline [border-bottom:1px_solid_rgba(242,248,250,0.7)] transition-[opacity,transform] duration-[560ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${activeProfile ? "translate-y-0 opacity-100" : "translate-y-[14px] opacity-0"}`}
+                style={{ transitionDelay: activeProfile ? "1020ms" : "0ms" }}
                 href={activeProfile.linkedin}
                 target="_blank"
                 rel="noreferrer"

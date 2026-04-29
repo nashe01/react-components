@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wiremit — Global P2P Payment Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050a14;
+    --surface: #0c1525;
+    --surface2: #111e33;
+    --border: #1a2d4d;
+    --accent: #00d4ff;
+    --accent2: #7b61ff;
+    --accent3: #00ff9d;
+    --text: #e8f4ff;
+    --muted: #6b8aaa;
+    --bank: #00d4ff;
+    --wallet: #7b61ff;
+    --card: #ff6b9d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow orbs */
+  body::after {
+    content: '';
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,212,255,0.06) 0%, transparent 70%);
+    top: -200px;
+    right: -100px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* HEADER */
+  header {
+    padding: 48px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+    position: relative;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .logo-area h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo-area p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .source-badge {
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 100px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .source-badge span {
+    color: var(--accent);
+  }
+
+  /* STATS STRIP */
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    padding: 24px 20px;
+    text-align: center;
+    transition: background 0.2s;
+  }
+  .stat-card:hover { background: var(--surface2); }
+
+  .stat-card .value {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-card .label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 360px;
+  }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 10px 14px 10px 40px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--accent);
+  }
+
+  input[type="text"]::placeholder { color: var(--muted); }
+
+  .filter-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.04em;
+  }
+
+  .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 500; }
+  .filter-btn.wallet-active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+  .filter-btn.card-active { background: var(--card); border-color: var(--card); color: #fff; }
+
+  /* REGION TABS */
+  .region-nav {
+    display: flex;
+    gap: 0;
+    margin-bottom: 32px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .region-nav::-webkit-scrollbar { display: none; }
+
+  .region-tab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+    margin-bottom: -1px;
+  }
+
+  .region-tab:hover { color: var(--text); }
+  .region-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .region-tab .count {
+    display: inline-block;
+    background: var(--surface);
+    border-radius: 100px;
+    padding: 1px 7px;
+    font-size: 11px;
+    margin-left: 6px;
+    color: var(--muted);
+  }
+
+  /* SUMMARY CARDS */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+
+  .region-summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .region-summary-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .region-summary-card:hover::before,
+  .region-summary-card.selected::before { opacity: 1; }
+  .region-summary-card:hover, .region-summary-card.selected {
+    border-color: var(--accent);
+    background: var(--surface2);
+  }
+
+  .region-summary-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .region-summary-card .metrics {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+  }
+
+  .metric { display: flex; flex-direction: column; gap: 2px; }
+  .metric .num { font-size: 20px; font-weight: 600; font-family: 'Syne', sans-serif; }
+  .metric .lbl { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* MAIN TABLE */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .table-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .result-count {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .result-count strong { color: var(--accent); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+
+  thead th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+  }
+
+  thead th:hover { color: var(--accent); }
+
+  thead th .sort-icon {
+    display: inline-block;
+    margin-left: 4px;
+    opacity: 0.4;
+  }
+
+  thead th.sorted { color: var(--accent); }
+  thead th.sorted .sort-icon { opacity: 1; }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(26, 45, 77, 0.5);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(0, 212, 255, 0.04); }
+
+  td {
+    padding: 12px 16px;
+    vertical-align: middle;
+    line-height: 1.4;
+  }
+
+  .country-cell {
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .channel-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  .channel-badge.bank { background: rgba(0,212,255,0.12); color: var(--bank); border: 1px solid rgba(0,212,255,0.25); }
+  .channel-badge.wallet { background: rgba(123,97,255,0.12); color: var(--wallet); border: 1px solid rgba(123,97,255,0.25); }
+  .channel-badge.card { background: rgba(255,107,157,0.12); color: var(--card); border: 1px solid rgba(255,107,157,0.25); }
+
+  .currency-pill {
+    font-size: 11px;
+    color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .fee-cell { color: var(--accent3); font-weight: 500; }
+
+  .partners-cell {
+    max-width: 220px;
+    color: var(--text);
+    opacity: 0.8;
+  }
+
+  .limits-cell {
+    max-width: 180px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .delivery-cell {
+    max-width: 220px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .penetration-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 80px;
+  }
+
+  .penetration-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .penetration-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width 0.5s ease;
+  }
+
+  .penetration-val {
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    min-width: 36px;
+    text-align: right;
+  }
+
+  .delivery-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .delivery-badge.rt {
+    background: rgba(0,255,157,0.1);
+    color: var(--accent3);
+    border: 1px solid rgba(0,255,157,0.2);
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 64px 24px;
+    color: var(--muted);
+  }
+
+  .empty-state svg { margin-bottom: 16px; opacity: 0.3; }
+  .empty-state p { font-size: 14px; }
+
+  /* Footer */
+  footer {
+    margin-top: 64px;
+    padding: 32px 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Animations */
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-in { animation: fadeSlideIn 0.3s ease forwards; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    td:nth-child(5), th:nth-child(5),
+    td:nth-child(6), th:nth-child(6) { display: none; }
+  }
+
+  @media (max-width: 500px) {
+    td:nth-child(7), th:nth-child(7) { display: none; }
+  }
+
+  .region-tag {
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="header-inner">
+      <div class="logo-area">
+        <h1>Wiremit</h1>
+        <p>Global P2P Payment Network Coverage — TerraPay</p>
+      </div>
+      <div class="source-badge">Source: <span>TerraPay</span> &nbsp;·&nbsp; Wiremit ONE API</div>
+    </div>
+  </header>
+
+  <!-- Stats Strip -->
+  
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="searchInput" placeholder="Search country, partner, currency…">
+    </div>
+    <div class="filter-group">
+      <button class="filter-btn active" data-channel="all">All</button>
+      <button class="filter-btn" data-channel="Bank">Bank</button>
+      <button class="filter-btn" data-channel="Wallet">Wallet</button>
+      <button class="filter-btn" data-channel="Card">Card</button>
+    </div>
+  </div>
+
+  <!-- Region Navigation -->
+  <div class="region-nav" id="regionNav"></div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid" id="summaryGrid"></div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div class="table-header">
+      <h2 id="tableTitle">All Regions</h2>
+      <div class="result-count">Showing <strong id="resultCount">0</strong> corridors</div>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th data-col="country">Country <span class="sort-icon">↕</span></th>
+            <th data-col="channel">Channel <span class="sort-icon">↕</span></th>
+            <th data-col="currency">Currency <span class="sort-icon">↕</span></th>
+            <th data-col="fee">Fee <span class="sort-icon">↕</span></th>
+            <th data-col="partners">Partners / Coverage</th>
+            <th data-col="limits">Limits</th>
+            <th data-col="delivery">Delivery</th>
+            <th data-col="penetration">Penetration <span class="sort-icon">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState" style="display:none">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <p>No corridors match your search</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Wiremit Global P2P Coverage · Source: TerraPay Global Coverage Sheet · Reformatted by Wiremit · 158 Countries · 140 Bank · 63 Wallet/Card</p>
+  </footer>
+</div>
+
+<script>
+const SUMMARY = [{"region":"East Africa","countries":17,"bank":9,"wallet":16},{"region":"West Africa","countries":15,"bank":13,"wallet":14},{"region":"Central Africa","countries":7,"bank":6,"wallet":7},{"region":"North Africa","countries":3,"bank":3,"wallet":1},{"region":"APAC","countries":27,"bank":23,"wallet":14},{"region":"Europe","countries":53,"bank":52,"wallet":3},{"region":"CIS","countries":4,"bank":4,"wallet":0},{"region":"ME","countries":10,"bank":10,"wallet":2},{"region":"Americas","countries":22,"bank":20,"wallet":6}];
+
+const REGIONS = {"East Africa":[{"country":"Angola","channel":"Wallet","currency":"AOA","fee":"1.5%","partners":"AkiPaga","limits":"EUR 10,000","delivery":"Real Time","penetration":"75%"},{"country":"Botswana","channel":"Wallet","currency":"BWP","fee":"1.5%","partners":"Orange","limits":"BTC: 10,000 | Orange: 9,500","delivery":"Real Time","penetration":"80%"},{"country":"Burundi","channel":"Wallet","currency":"BIF","fee":"1.5%","partners":"EcoCash","limits":"1600000","delivery":"Real Time","penetration":"59%"},{"country":"Comoros","channel":"Wallet","currency":"KMF","fee":"1.5%","partners":"Telma (MVola)","limits":"1000000","delivery":"Real Time","penetration":"75%"},{"country":"Ethiopia","channel":"Bank","currency":"ETB","fee":"1.5%","partners":"All Banks","limits":"No Limit","delivery":"Same Day/T+1 | Cutoff: 1600 hours EAT","penetration":"100%"},{"country":"Ethiopia","channel":"Wallet","currency":"ETB","fee":"1.5%","partners":"M-Pesa, Cberirr, Kacha","limits":"300000","delivery":"Real Time","penetration":"75%"},{"country":"Kenya","channel":"Wallet","currency":"KES","fee":"1.5%","partners":"M-Pesa, Airtel, Equitel","limits":"Airtel: 250,000 | M-Pesa: 250,000","delivery":"Real Time","penetration":"98%"},{"country":"Kenya","channel":"Bank","currency":"KES","fee":"1.5%","partners":"All Banks","limits":"999999.99","delivery":"Same Day/T+1 | Cutoff: 1400 hours EAT","penetration":"100%"},{"country":"Lesotho","channel":"Wallet","currency":"LSL","fee":"1.5%","partners":"EcoCash","limits":"5000","delivery":"Real Time","penetration":"60%"},{"country":"Madagascar","channel":"Wallet","currency":"MGA","fee":"1.5%","partners":"Airtel, Orange","limits":"5000000","delivery":"Real Time","penetration":"50%"},{"country":"Malawi","channel":"Wallet","currency":"MWK","fee":"1.5%","partners":"Airtel, TNM","limits":"Airtel 200,000 | TNM 7500,00","delivery":"Real Time","penetration":"64%"},{"country":"Malawi","channel":"Bank","currency":"MWK","fee":"1.5%","partners":"All Banks","limits":"FDH accounts: No limit | Other: MWK 5,000,000","delivery":"Same Day/T+1 | Cutoff: 1400 hours EAT","penetration":"100%"},{"country":"Mozambique","channel":"Wallet","currency":"MZN","fee":"1.5%","partners":"M-Pesa","limits":"25000","delivery":"Real Time","penetration":"83%"},{"country":"Rwanda","channel":"Wallet","currency":"RWF","fee":"1.5%","partners":"MTN, Airtel-Tigo","limits":"Airtel-Tigo 2,000,000 | MTN 10,000,000","delivery":"Real Time","penetration":"100%"},{"country":"Rwanda","channel":"Bank","currency":"RWF","fee":"1.5%","partners":"All Banks","limits":"5000000","delivery":"Same Day/T+1 | Cutoff: 1400 hours EAT","penetration":"100%"},{"country":"South Africa","channel":"Bank","currency":"ZAR","fee":"1.5%","partners":"All Banks","limits":"300000","delivery":"Same Day/T+1 | Cutoff: 1400 hours GMT+2","penetration":"100%"},{"country":"South Sudan","channel":"Wallet","currency":"SSP","fee":"1.5%","partners":"mGurush, MTN","limits":"2000","delivery":"Real Time","penetration":"50%"},{"country":"Tanzania","channel":"Wallet","currency":"TZS","fee":"1.5%","partners":"Airtel, Vodacom, Tigo, TTCL, Azampay, Halo","limits":"5000000","delivery":"Real Time","penetration":"87%"},{"country":"Tanzania","channel":"Bank","currency":"TZS","fee":"1.5%","partners":"All Banks","limits":"20000000","delivery":"Same Day/T+1 | Cutoff: 1400 hours EAT","penetration":"100%"},{"country":"Uganda","channel":"Wallet","currency":"UGX","fee":"1.5%","partners":"MTN, Airtel, Flexipay","limits":"20000000","delivery":"Real Time","penetration":"86%"},{"country":"Uganda","channel":"Bank","currency":"UGX","fee":"1.5%","partners":"All Banks","limits":"20000000","delivery":"Same Day/T+1 | Cutoff: 1400 hours EAT","penetration":"100%"},{"country":"Zambia","channel":"Wallet","currency":"ZMW","fee":"1.5%","partners":"Airtel, MTN, Zamtel","limits":"All: 20000 | Zamtel: 10000","delivery":"Real Time","penetration":"50%"},{"country":"Zambia","channel":"Bank","currency":"ZMW","fee":"1.5%","partners":"All Banks","limits":"150000","delivery":"Real Time","penetration":"100%"},{"country":"Zimbabwe","channel":"Bank","currency":"USD","fee":"1.5%","partners":"Major Banks","limits":"2000","delivery":"Real Time","penetration":"75%"},{"country":"Zimbabwe","channel":"Wallet","currency":"USD","fee":"2.2%","partners":"EcoCash, InnBucks, O'Maari","limits":"2000","delivery":"Real Time","penetration":"63%"}],"West Africa":[{"country":"Benin","channel":"Wallet","currency":"XOF","fee":"1.5%","partners":"MTN, Moov, BMO","limits":"2000000","delivery":"Real Time","penetration":"100%"},{"country":"Benin","channel":"Bank","currency":"XOF","fee":"1.5%","partners":"All Banks","limits":"5000000","delivery":"T+1","penetration":"100%"},{"country":"Burkina Faso","channel":"Wallet","currency":"XOF","fee":"1.5%","partners":"Moov, Orange","limits":"2000000","delivery":"Real Time","penetration":"84%"},{"country":"Burkina Faso","channel":"Bank","currency":"XOF","fee":"1.5%","partners":"All Banks","limits":"5000000","delivery":"T+1","penetration":"100%"},{"country":"Gambia","channel":"Bank","currency":"GMD","fee":"1.5%","partners":"All Banks","limits":"USD 10,000","delivery":"Same Day/T+1 | Cutoff: 1500 hours local time","penetration":"100%"},{"country":"Gambia","channel":"Wallet","currency":"GMD","fee":"1.5%","partners":"AfriMoney, QMoney, Wave","limits":"20,000 - 30,000","delivery":"Real Time","penetration":"75%"},{"country":"Ghana","channel":"Wallet","currency":"GHS","fee":"1.5%","partners":"MTN, Airtel-Tigo, Vodafone","limits":"25000","delivery":"Real Time","penetration":"98%"},{"country":"Ghana","channel":"Bank","currency":"GHS","fee":"1.5%","partners":"All Banks","limits":"150000","delivery":"Real Time","penetration":"100%"},{"country":"Guinea Bissau","channel":"Wallet","currency":"XOF","fee":"1.5%","partners":"MTN","limits":"1500000","delivery":"Real Time","penetration":"52%"},{"country":"Guinea Bissau","channel":"Bank","currency":"XOF","fee":"1.5%","partners":"All Banks","limits":"5000000","delivery":"T+1","penetration":"100%"},{"country":"Guinea Conakry","channel":"Wallet","currency":"GNF","fee":"1.5%","partners":"MTN, Orange","limits":"50000000","delivery":"Real Time","penetration":"50%"},{"country":"Ivory Coast","channel":"Bank","currency":"XOF","fee":"1.5%","partners":"All Banks","limits":"5000000","delivery":"T+1","penetration":"100%"},{"country":"Ivory Coast","channel":"Wallet","currency":"XOF","fee":"1.5%","partners":"Orange, MTN, Moov","limits":"1500000","delivery":"Real Time","penetration":"100%"},{"country":"Liberia","channel":"Wallet","currency":"USD","fee":"1.5%","partners":"MTN, Orange","limits":"No Limit","delivery":"Real Time","penetration":"50%"},{"country":"Mali","channel":"Wallet","currency":"XOF","fee":"1.5%","partners":"Orange, Moov, Wave, Sama","limits":"2000000","delivery":"Real Time","penetration":"100%"},{"country":"Mali","channel":"Bank","currency":"XOF","fee":"1.5%","partners":"All Banks","limits":"5000000","delivery":"T+1","penetration":"100%"},{"country":"Mauritania","channel":"Bank","currency":"MRU","fee":"1.5%","partners":"BPM","limits":"400000","delivery":"Real Time","penetration":"50%"},{"country":"Mauritania","channel":"Wallet","currency":"MRU","fee":"1.5%","partners":"Mauripay, Sedad, Click, Bankily, Masrivi","limits":"EUR 990","delivery":"Real Time","penetration":"85%"},{"country":"Niger","channel":"Bank","currency":"XOF","fee":"1.5%","partners":"All Banks","limits":"5000000","delivery":"T+1","penetration":"100%"},{"country":"Nigeria","channel":"Bank","currency":"NGN","fee":"1.5%","partners":"All Banks","limits":"2000000","delivery":"Real Time","penetration":"100%"},{"country":"Nigeria","channel":"Wallet","currency":"NGN","fee":"1.5%","partners":"Smartcash PSB, All NIBSS Wallets","limits":"Tier 1: 50,000 | Tier 2: 200,000 | Tier 3: 1,000,000","delivery":"Real Time","penetration":"100%"},{"country":"Senegal","channel":"Wallet","currency":"XOF","fee":"1.5%","partners":"Orange, Mixx, Wave, Wizall","limits":"2000000","delivery":"Real Time","penetration":"90%"},{"country":"Senegal","channel":"Bank","currency":"XOF","fee":"1.5%","partners":"All Banks","limits":"5000000","delivery":"T+1","penetration":"100%"},{"country":"Sierra Leone","channel":"Bank","currency":"SLE","fee":"1.5%","partners":"All Banks","limits":"USD 30,000","delivery":"Same Day/T+1 | Cutoff: 1600 hours GMT","penetration":"100%"},{"country":"Sierra Leone","channel":"Wallet","currency":"SLE","fee":"1.5%","partners":"Orange, Africel, Afro","limits":"15000000","delivery":"Real Time","penetration":"51%"},{"country":"Togo","channel":"Wallet","currency":"XOF","fee":"1.5%","partners":"Moov","limits":"1500000","delivery":"Real Time","penetration":"50%"},{"country":"Togo","channel":"Bank","currency":"XOF","fee":"1.5%","partners":"All Banks","limits":"2000000","delivery":"T+1","penetration":"100%"}],"Central Africa":[{"country":"Cameroon","channel":"Bank","currency":"XAF","fee":"1.5%","partners":"UBA","limits":"WIP","delivery":"Real Time","penetration":""},{"country":"Cameroon","channel":"Wallet","currency":"XAF","fee":"1.5%","partners":"MTN, Orange","limits":"1000000","delivery":"Real Time","penetration":"89%"},{"country":"Central African Republic","channel":"Wallet","currency":"XAF","fee":"1.5%","partners":"Orange","limits":"1000000","delivery":"Real Time","penetration":"80%"},{"country":"Central African Republic","channel":"Bank","currency":"XAF","fee":"1.5%","partners":"Major Banks","limits":"WIP","delivery":"Same Day/T+1 | Cutoff: 1600 hours local time","penetration":"80%"},{"country":"Chad","channel":"Wallet","currency":"XAF","fee":"1.5%","partners":"Airtel, Moov","limits":"1000000","delivery":"Real Time","penetration":"75%"},{"country":"Chad","channel":"Bank","currency":"XAF","fee":"1.5%","partners":"Major Banks","limits":"WIP","delivery":"Same Day/T+1 | Cutoff: 1600 hours local time","penetration":"80%"},{"country":"Congo B","channel":"Wallet","currency":"XAF","fee":"1.5%","partners":"Airtel, MTN","limits":"1000000","delivery":"Real Time","penetration":"50%"},{"country":"Congo B","channel":"Bank","currency":"XAF","fee":"1.5%","partners":"Major Banks","limits":"WIP","delivery":"Same Day/T+1 | Cutoff: 1600 hours local time","penetration":"80%"},{"country":"DRC","channel":"Wallet","currency":"USD","fee":"1.5%","partners":"Airtel, Orange, M-Pesa","limits":"Airtel: 1,000 | M-Pesa: 1,500 | Orange: 72500","delivery":"Real Time","penetration":"50%"},{"country":"Equatorial Guinea","channel":"Bank","currency":"XAF","fee":"1.5%","partners":"Major Banks","limits":"WIP","delivery":"Same Day/T+1 | Cutoff: 1600 hours local time","penetration":"100%"},{"country":"Equatorial Guinea","channel":"Wallet","currency":"XAF","fee":"1.5%","partners":"Muni Dinero","limits":"TBD","delivery":"TBD","penetration":"85%"},{"country":"Gabon","channel":"Wallet","currency":"XAF","fee":"1.5%","partners":"Airtel, Moov","limits":"500000","delivery":"Real Time","penetration":"50%"},{"country":"Gabon","channel":"Bank","currency":"XAF","fee":"1.5%","partners":"Major Banks","limits":"WIP","delivery":"Same Day/T+1 | Cutoff: 1600 hours local time","penetration":"100%"}],"North Africa":[{"country":"Egypt","channel":"Wallet","currency":"EGP","fee":"1.5%","partners":"All wallets (Banks & MNOs)","limits":"30000","delivery":"Real Time","penetration":"100%"},{"country":"Egypt","channel":"Bank","currency":"EGP/USD","fee":"1.5%","partners":"All Banks","limits":"USD 15,000","delivery":"EGP: Same Day/T+1 | USD: Same Day/T+2","penetration":"100%"},{"country":"Morocco","channel":"Bank","currency":"MAD","fee":"1.5%","partners":"All Banks","limits":"80000","delivery":"Attijariwafa Bank accounts: Real Time | Other Banks accounts: T+1, Cutoff 3PM (GMT+1)","penetration":"100%"},{"country":"Tunisia","channel":"Bank","currency":"TND","fee":"1.5%","partners":"All Banks","limits":"100000","delivery":"T+3 | Cutoff:1300 hours GMT +1","penetration":"100%"}],"APAC":[{"country":"Afghanistan","channel":"Bank","currency":"AFN/USD","fee":"1.5%","partners":"Major Banks","limits":"USD 5,000","delivery":"Real Time","penetration":"85%"},{"country":"Afghanistan","channel":"Wallet","currency":"AFN","fee":"1.5%","partners":"HesabPay, Aurum, StarPay","limits":"USD 5,000","delivery":"Real Time","penetration":"60%"},{"country":"Australia","channel":"Bank","currency":"AUD","fee":"1.5%","partners":"All Banks","limits":"No Limit","delivery":"Same Day/T+1 | Cutoff:1300 hours GMT+8","penetration":"100%"},{"country":"Bangladesh","channel":"Wallet","currency":"BDT","fee":"1.5%","partners":"bKash, Rocket, Nagad","limits":"250000","delivery":"Real Time","penetration":"95%"},{"country":"Bangladesh","channel":"Bank","currency":"BDT","fee":"1.5%","partners":"All Banks","limits":"No Limit","delivery":"Same Day/T+1","penetration":"100%"},{"country":"Brunei","channel":"Bank","currency":"BND","fee":"1.5%","partners":"All Banks","limits":"No Limit","delivery":"Same Day/T+1 | Cutoff: 1300 GMT+8","penetration":"100%"},{"country":"Cambodia","channel":"Bank","currency":"USD","fee":"1.5%","partners":"All Banks","limits":"10000","delivery":"Real Time","penetration":"100%"},{"country":"Cambodia","channel":"Wallet","currency":"USD","fee":"1.5%","partners":"TrueMoney, Ly Hour Pay Pro Plc, ACLEDA Bank, AsiaWeiLuy, eMoney, U-PayDigital","limits":"10000","delivery":"Real Time","penetration":"70%"},{"country":"China","channel":"Wallet","currency":"CNY","fee":"1.5%","partners":"Alipay, WeChat","limits":"50000","delivery":"Real Time","penetration":"95%"},{"country":"China","channel":"Card","currency":"CNY","fee":"1.5%","partners":"Union Pay Cards","limits":"20000","delivery":"Same Day/T+1 | Cutoff: 2230 hours GMT+8","penetration":"100%"},{"country":"China","channel":"Bank","currency":"CNY/ USD","fee":"1.5%","partners":"All Banks","limits":"CNY: 50,000 | USD: No Limit","delivery":"CNY: Real Time | USD: Same Day/ T+1 | Cutoff: 1600 hours GMT+8","penetration":"100%"},{"country":"Fiji","channel":"Wallet","currency":"FJD","fee":"1.5%","partners":"Digicel","limits":"10000","delivery":"Real Time","penetration":"75%"},{"country":"Hong Kong","channel":"Bank","currency":"HKD/CNY","fee":"1.5%","partners":"All Banks","limits":"HKD 250K | CNY 250K","delivery":"Same Day/T+1 | Cutoff: 1300 hours GMT+8","penetration":"100%"},{"country":"India","channel":"Bank","currency":"INR","fee":"1.5%","partners":"All Banks","limits":"NEFT - No Limit | IMPS - 500,000 | UPI - 100,000","delivery":"NEFT - 30 minute batch | UPI - Real Time | IMPS - Real Time","penetration":"100%"},{"country":"Indonesia","channel":"Wallet","currency":"IDR","fee":"1.5%","partners":"GoPay, LinkAja, OVO (Grab), DANA, ShopeePay, Doku, PosPay","limits":"LinkAja: 10,000,000 | Others: 20,000,000","delivery":"Real Time","penetration":"65%"},{"country":"Indonesia","channel":"Bank","currency":"IDR","fee":"1.5%","partners":"All Banks","limits":"100000000","delivery":"Real Time","penetration":"100%"},{"country":"Japan","channel":"Bank","currency":"JPY","fee":"1.5%","partners":"All Banks","limits":"1000000","delivery":"Same Day/T+1 | Cutoff:1100 hours GMT+9","penetration":"100%"},{"country":"Laos","channel":"Bank","currency":"USD","fee":"1.5%","partners":"All Banks","limits":"","delivery":"T+3","penetration":"100%"},{"country":"Malaysia","channel":"Wallet","currency":"MYR","fee":"1.5%","partners":"TnG, BigPay","limits":"10000","delivery":"Real Time","penetration":"80%"},{"country":"Malaysia","channel":"Bank","currency":"MYR","fee":"1.5%","partners":"All Banks","limits":"100000","delivery":"Real Time","penetration":"100%"},{"country":"Mongolia","channel":"Bank","currency":"MNT","fee":"1.5%","partners":"All Banks","limits":"15000000","delivery":"Real Time","penetration":"100%"},{"country":"Myanmar","channel":"Bank","currency":"MMK","fee":"1.5%","partners":"All Banks","limits":"","delivery":"T+3","penetration":"100%"},{"country":"Nepal","channel":"Wallet","currency":"NPR","fee":"1.5%","partners":"eSewa, Khalti-IME","limits":"150000","delivery":"Real Time","penetration":"95%"},{"country":"Nepal","channel":"Bank","currency":"NPR","fee":"1.5%","partners":"All Banks","limits":"1000000","delivery":"Instant banks: Real time, 24*7 | Non real time: Nepal SBI, Standard Chartered","penetration":"100%"},{"country":"New Zealand","channel":"Bank","currency":"NZD","fee":"1.5%","partners":"All Banks","limits":"30000","delivery":"Same Day/T+1 | Cutoff:1500 hours GMT+13","penetration":"100%"},{"country":"Pakistan","channel":"Bank","currency":"PKR","fee":"1.5%","partners":"All Banks","limits":"No Limit","delivery":"Real Time","penetration":"100%"},{"country":"Pakistan","channel":"Wallet","currency":"PKR","fee":"1.5%","partners":"JazzCash, EasyPaisa, SadaPay, BankAlfa, Digit++, UPaisa","limits":"500000","delivery":"Real Time","penetration":"100%"},{"country":"Philippines","channel":"Bank","currency":"PHP","fee":"1.5%","partners":"All Banks","limits":"100000000","delivery":"Real Time upto 50K | Same Day/T+1 above 50K","penetration":"100%"},{"country":"Philippines","channel":"Bank","currency":"USD","fee":"1.5%","partners":"All Banks","limits":"500000","delivery":"Same Day/T+1 | Cutoff: 1500 hours GMT+8","penetration":"100%"},{"country":"Philippines","channel":"Wallet","currency":"PHP","fee":"1.5%","partners":"GCash, PayMaya, Coins PH, SPY (StarPAY), GrabPay, Palawanpay","limits":"GCash: 500,000 | Others: 50,000","delivery":"Real Time","penetration":"100%"},{"country":"Samoa","channel":"Wallet","currency":"WST","fee":"1.5%","partners":"Digicel","limits":"10000","delivery":"Real Time","penetration":"75%"},{"country":"Singapore","channel":"Bank","currency":"SGD","fee":"1.5%","partners":"All Banks","limits":"100000","delivery":"Same Day/T+1 | Cutoff: 1300 hours GMT+8","penetration":"100%"},{"country":"South Korea","channel":"Bank","currency":"KRW","fee":"1.5%","partners":"All Banks","limits":"USD 5,000","delivery":"Real Time","penetration":"100%"},{"country":"Sri Lanka","channel":"Bank","currency":"LKR/USD","fee":"1.5%","partners":"All Banks","limits":"LKR: 1,000,000 | USD: No Limits","delivery":"LKR: Real Time | USD: Same day/T+1 | Cutoff: 1000 hours GMT+5.30","penetration":"100%"},{"country":"Thailand","channel":"Bank","currency":"THB","fee":"1.5%","partners":"All Banks","limits":"PromptPay : 2M THB | BahtNet: No limit","delivery":"Real Time upto 2M THB for major banks | Same Day/T+1 Cutoff 2PM GMT+7 beyond 2M","penetration":"100%"},{"country":"Tonga","channel":"Wallet","currency":"TOP","fee":"1.5%","partners":"Digicel","limits":"10000","delivery":"Real Time","penetration":"75%"},{"country":"Vanuatu","channel":"Wallet","currency":"VUV","fee":"1.5%","partners":"Digicel","limits":"500000","delivery":"Real Time","penetration":"75%"},{"country":"Vietnam","channel":"Wallet","currency":"VND","fee":"1.5%","partners":"Momo, VNPT Pay, ZaloPay, VNPay","limits":"50000000","delivery":"Real Time","penetration":"95%"},{"country":"Vietnam","channel":"Bank","currency":"VND","fee":"1.5%","partners":"All Banks","limits":"500000000","delivery":"Real Time","penetration":"100%"},{"country":"Vietnam","channel":"Bank","currency":"USD","fee":"1.5%","partners":"All Banks","limits":"","delivery":"Same Day/T+1","penetration":"100%"}],"Europe":[{"country":"Aland Islands","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Andorra","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Austria","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Azerbaijan","channel":"Card","currency":"AZN/USD/EUR","fee":"1.5%","partners":"Visa, MC, Azerturk","limits":"USD 10,000","delivery":"Real Time","penetration":"100%"},{"country":"Belgium","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Bulgaria","channel":"Bank","currency":"EUR/BGN","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Croatia","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Cyprus","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Czech Republic","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Czech Republic","channel":"Bank","currency":"CZK","fee":"1.5%","partners":"All Banks","limits":"Local Limits apply","delivery":"Same Day/T+1 | Cutoff: 1200 hours local time","penetration":"100%"},{"country":"Denmark","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Estonia","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Finland","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"France","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"French Guiana","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Georgia","channel":"Bank","currency":"GEL","fee":"1.5%","partners":"All Banks","limits":"USD 10,000","delivery":"Same Day/T+1 | Cutoff: 1730 hours local time","penetration":"100%"},{"country":"Germany","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Gibraltar","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Greece","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Guadeloupe","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Guernsey","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Hungary","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Hungary","channel":"Bank","currency":"HUF","fee":"1.5%","partners":"All Banks","limits":"No Limit","delivery":"Same Day/T+1 | Cutoff: 1300 hours GMT","penetration":"100%"},{"country":"Iceland","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Ireland","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Isle of Man","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Italy","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Jersey","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Latvia","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Liechtenstein","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Lithuania","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Luxembourg","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Malta","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Martinique","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Mayotte","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Monaco","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Netherlands","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Norway","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Poland","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Poland","channel":"Bank","currency":"PLN","fee":"1.5%","partners":"All Banks","limits":"RTP: PLN 99,999 | ACH: PLN 999,999 | RTGS: PLN 1,000,000+","delivery":"Txn upto PLN 100,000: Real time | Txn above PLN 100,000: Same Day/T+1 | Cutoff: 11:30 AM CET","penetration":"100%"},{"country":"Portugal","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Reunion","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Romania","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Romania","channel":"Bank","currency":"RON","fee":"1.5%","partners":"All Banks","limits":"USD 100,000","delivery":"Same Day/T+1 | Cutoff: 1100 hours GMT","penetration":"100%"},{"country":"Saint Barthelemy","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Saint Martin","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Saint Pierre And Miquelon","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"San Marino","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Slovakia","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Slovenia","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Spain","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Sweden","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Instant €100K per txn & SEPA Credit Transfer €1M per txn","delivery":"SEPA Instant: 24*7, Real-time | SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Switzerland","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Switzerland","channel":"Bank","currency":"CHF","fee":"1.5%","partners":"All Banks","limits":"Local Limits apply","delivery":"Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Turkey","channel":"Bank","currency":"TRY","fee":"1.5%","partners":"All Banks","limits":"3500000","delivery":"Real-time for transactions 9:00 AM to 05:00 PM (GMT+3)","penetration":"100%"},{"country":"Turkey","channel":"Wallet","currency":"TRY/USD/EUR","fee":"1.5%","partners":"UPTion Wallets","limits":"USD 10,000","delivery":"Real Time","penetration":"100%"},{"country":"Ukraine","channel":"Bank","currency":"UAH","fee":"1.5%","partners":"All Banks","limits":"30000","delivery":"Real Time","penetration":"100%"},{"country":"Ukraine","channel":"Card","currency":"UAH","fee":"1.5%","partners":"Visa, MC, Prostir","limits":"EUR 730","delivery":"Real Time","penetration":"80%"},{"country":"United Kingdom","channel":"Bank","currency":"GBP/EUR","fee":"1.5%","partners":"All Banks","limits":"GBP FPS £1M per transaction & SEPA Instant €100K per transaction | SEPA Credit Transfer €1M per txn","delivery":"Same Day/T+1 | Cutoff: 1430 hours local time","penetration":"100%"},{"country":"Vatican City State","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"}],"CIS":[{"country":"Albania","channel":"Bank","currency":"ALL","fee":"1.5%","partners":"All Banks","limits":"EUR 10,000","delivery":"Same Day/T+1 | Cutoff:1415 hours GMT+1","penetration":"100%"},{"country":"Albania","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Moldova","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"Montenegro","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"},{"country":"North Macedonia","channel":"Bank","currency":"EUR","fee":"1.5%","partners":"All Banks","limits":"SEPA Credit Transfer €1M per txn","delivery":"SEPA Non Instant: Same Day/T+1 | Cutoff: 1400 hours GMT","penetration":"100%"}],"ME":[{"country":"Bahrain","channel":"Bank","currency":"BHD","fee":"1.5%","partners":"All Banks","limits":"3780","delivery":"Same Day/T+1 | Cutoff: 1400 hours local time","penetration":"100%"},{"country":"Iraq","channel":"Bank","currency":"IQD","fee":"1.5%","partners":"All Banks","limits":"USD 10,000","delivery":"Al Taif accounts - Real time 24x7 | Other Banks - Same Day/T+1 | Cutoff: 1430 hours GMT +3","penetration":"100%"},{"country":"Israel","channel":"Bank","currency":"ILS","fee":"1.5%","partners":"All Banks","limits":"25000","delivery":"Neema accounts: Same Day | Other accounts: T+1","penetration":"100%"},{"country":"Jordan","channel":"Bank","currency":"JOD","fee":"1.5%","partners":"All banks","limits":"Real Time: JOD 10,000 | Non Real Time: No Limit","delivery":"Same Day/T+1 | Cutoff: 1500 hours local time","penetration":"100%"},{"country":"Kuwait","channel":"Bank","currency":"KWD","fee":"1.5%","partners":"Major banks","limits":"No Limit","delivery":"T+1","penetration":"85%"},{"country":"Lebanon","channel":"Bank","currency":"USD","fee":"1.5%","partners":"Major Banks","limits":"USD 10,000","delivery":"Same Day/T+2 | Cutoff: 1PM Local time","penetration":"100%"},{"country":"Lebanon","channel":"Wallet","currency":"USD","fee":"1.5%","partners":"Zaky, Suyool, Matensa, Whish","limits":"Zaky, Suyool - USD 2,000 | Matensa - USD 3,000 | Whish - USD 10,000","delivery":"Real Time","penetration":"75%"},{"country":"Qatar","channel":"Bank","currency":"QAR","fee":"1.5%","partners":"Major Banks","limits":"200000","delivery":"Same Day/T+1 | Cutoff: 1200 hours GMT+3","penetration":"85%"},{"country":"Saudi Arabia","channel":"Wallet","currency":"SAR","fee":"1.5%","partners":"All Wallets","limits":"No Limit","delivery":"Under SAR 20,000: Real Time | Above SAR 20,000: T+1 Cutoff 1530 hours local time","penetration":"100%"},{"country":"Saudi Arabia","channel":"Bank","currency":"SAR","fee":"1.5%","partners":"All Banks","limits":"No Limit","delivery":"Under SAR 20,000: Real Time | Above SAR 20,000: T+1 Cutoff 1530 hours local time","penetration":"100%"},{"country":"UAE","channel":"Bank","currency":"AED","fee":"1.5%","partners":"All Banks","limits":"36700","delivery":"Same Day/T+1 | Cutoff: 1100 hours GMT+4","penetration":"100%"},{"country":"Yemen","channel":"Bank","currency":"USD/SAR","fee":"1.5%","partners":"Major Banks","limits":"USD 10,000/ SAR equivalent","delivery":"Real Time","penetration":"50%"}],"Americas":[{"country":"Argentina","channel":"Bank","currency":"ARS","fee":"1.5%","partners":"All Banks","limits":"USD 7,000 (Differentiated FX rate)","delivery":"Same Day/T+1 | Cutoff: 1500 hours local time","penetration":"100%"},{"country":"Bolivia","channel":"Bank","currency":"BOB","fee":"1.5%","partners":"All Banks","limits":"USD 620","delivery":"Real Time","penetration":"100%"},{"country":"Bolivia","channel":"Wallet","currency":"BOB","fee":"1.5%","partners":"Yolo Pago","limits":"USD 620","delivery":"Real Time","penetration":"70%"},{"country":"Brazil","channel":"Bank","currency":"BRL","fee":"1.5%","partners":"All Banks","limits":"500000","delivery":"PIX Transactions: Real Time | Non PIX: Same Day/T+1 | Cutoff: 1500 hours local time","penetration":"100%"},{"country":"Canada","channel":"Bank","currency":"CAD","fee":"1.5%","partners":"All Banks","limits":"No Limit","delivery":"Same Day/T+1 | Cutoff: 1700 hours GMT","penetration":"100%"},{"country":"Chile","channel":"Bank","currency":"CLP","fee":"1.5%","partners":"All Banks","limits":"No Limit","delivery":"Real Time","penetration":"100%"},{"country":"Colombia","channel":"Wallet","currency":"COP","fee":"1.5%","partners":"Nequi, Movii, Daviplata, Ding, Powii, Coink","limits":"USD 2,000","delivery":"Real Time for Nequi | Others Same day/T+1","penetration":"95%"},{"country":"Colombia","channel":"Bank","currency":"COP","fee":"1.5%","partners":"All Banks","limits":"Bancolombia: USD 56,000 | Others: ACH Limits","delivery":"Same Day/T+1 | Cutoff: 1500 hours local time","penetration":"100%"},{"country":"Costa Rica","channel":"Bank","currency":"CRC","fee":"1.5%","partners":"All Banks","limits":"USD 10,000","delivery":"Same Day/T+1 | Cutoff: 1400 hours local time","penetration":"100%"},{"country":"Dominican Republic","channel":"Bank","currency":"DOP","fee":"1.5%","partners":"All Banks","limits":"75000","delivery":"T+1 | Cutoff:1600 hours EST","penetration":"100%"},{"country":"Ecuador","channel":"Bank","currency":"USD","fee":"1.5%","partners":"All Banks","limits":"USD 1,000,000","delivery":"Same Day/T+1 | Cutoff: 1500 hours local time","penetration":"100%"},{"country":"El Salvador","channel":"Bank","currency":"USD","fee":"1.5%","partners":"All Banks","limits":"Banco Atlantida: USD 3,000 | Fedecaces: USD 10,000 | Other Banks: USD 7,500","delivery":"Same Day/T+1 | Cutoff: 1600 GMT-6","penetration":"100%"},{"country":"Guatemala","channel":"Bank","currency":"GTQ","fee":"1.5%","partners":"All Banks","limits":"No Limit","delivery":"T+1 | Cutoff:1600 hours EST","penetration":"100%"},{"country":"Guatemala","channel":"Wallet","currency":"GTQ","fee":"1.5%","partners":"Nequi","limits":"USD 9,500","delivery":"Real Time","penetration":"75%"},{"country":"Haiti","channel":"Wallet","currency":"HTG","fee":"1.5%","partners":"MonCash","limits":"3000","delivery":"Real Time","penetration":"100%"},{"country":"Honduras","channel":"Bank","currency":"USD","fee":"1.5%","partners":"All Banks","limits":"Banco Atlantida No Limit, Others USD 7,500","delivery":"T+1 | Cutoff:1600 hours EST","penetration":"100%"},{"country":"Jamaica","channel":"Bank","currency":"JMD/USD","fee":"1.5%","partners":"All Banks","limits":"4,500 USD","delivery":"Same Day/T+1 | Cutoff:1600 hours GMT-6","penetration":"100%"},{"country":"Mexico","channel":"Bank","currency":"MXN","fee":"1.5%","partners":"All Banks","limits":"USD 10,000","delivery":"All Banks: Real Time | Bancoppel: Within 3 hours","penetration":"100%"},{"country":"Nicaragua","channel":"Bank","currency":"USD","fee":"1.5%","partners":"Major Banks","limits":"USD 5,000","delivery":"Lafise & Ficohsa: Real time | Other Banks: Same Day/T+1 | Cutoff: 2100 hours GMT-6","penetration":"100%"},{"country":"Panama","channel":"Bank","currency":"USD","fee":"1.5%","partners":"All Banks","limits":"No Limit","delivery":"Same Day/T+1 | Cutoff: 1500 hours local time","penetration":"100%"},{"country":"Paraguay","channel":"Bank","currency":"PYG","fee":"1.5%","partners":"All Banks","limits":"7000000000","delivery":"Same Day/T+1 | Cutoff: 1500 hours local time","penetration":"100%"},{"country":"Peru","channel":"Bank","currency":"PEN/USD","fee":"1.5%","partners":"All Banks","limits":"No Limit","delivery":"Same Day/T+1 | Cutoff: 1500 hours local time","penetration":"100%"},{"country":"Peru","channel":"Bank","currency":"PEN","fee":"1.5%","partners":"All Banks","limits":"USD 100,000","delivery":"Same Day/T+1 | Cutoff: 1700 hours GMT","penetration":"100%"},{"country":"Peru","channel":"Wallet","currency":"PEN","fee":"1.5%","partners":"YAPE","limits":"3500","delivery":"Real time","penetration":"85%"},{"country":"Trinidad & Tobago","channel":"Wallet","currency":"TTD","fee":"1.5%","partners":"Paywise","limits":"Tier 1: USD 430 | Tier 2: USD 770 | Tier 3: USD 1400","delivery":"Real Time","penetration":"80%"},{"country":"Uruguay","channel":"Bank","currency":"UYU","fee":"1.5%","partners":"All Banks","limits":"5000000","delivery":"Same Day/T+1 | Cutoff: 1500 hours local time","penetration":"100%"},{"country":"USA","channel":"Bank","currency":"USD","fee":"1.5%","partners":"All Banks","limits":"No Limit","delivery":"T+1 | Cutoff: 1730 hours GMT","penetration":"100%"}]};
+
+// Flatten all data with region tag
+let allData = [];
+for (const [region, rows] of Object.entries(REGIONS)) {
+  rows.forEach(r => allData.push({ ...r, region }));
+}
+
+let currentRegion = 'All';
+let currentChannel = 'all';
+let searchQuery = '';
+let sortCol = '';
+let sortDir = 1;
+
+// Build stats
+function buildStats() {
+  const totalRows = allData.length;
+  const bankRows = allData.filter(r => r.channel === 'Bank').length;
+  const walletRows = allData.filter(r => r.channel === 'Wallet' || r.channel === 'Card').length;
+  const uniqueCountries = new Set(allData.map(r => r.country)).size;
+
+  const strip = document.getElementById('statsStrip');
+  const stats = [
+    { value: '158', label: 'Countries', color: 'var(--accent)' },
+    { value: totalRows.toString(), label: 'Total Corridors', color: 'var(--text)' },
+    { value: bankRows.toString(), label: 'Bank Corridors', color: 'var(--bank)' },
+    { value: walletRows.toString(), label: 'Wallet / Card', color: 'var(--wallet)' },
+    { value: '9', label: 'Regions', color: 'var(--accent3)' },
+    { value: '1.5%', label: 'Standard Fee', color: 'var(--accent2)' },
+  ];
+
+  strip.innerHTML = stats.map(s => `
+    <div class="stat-card">
+      <div class="value" style="color:${s.color}">${s.value}</div>
+      <div class="label">${s.label}</div>
+    </div>
+  `).join('');
+}
+
+// Build region nav
+function buildRegionNav() {
+  const nav = document.getElementById('regionNav');
+  const regions = ['All', ...Object.keys(REGIONS)];
+  nav.innerHTML = regions.map(r => {
+    const count = r === 'All' ? allData.length : REGIONS[r].length;
+    return `<button class="region-tab ${r === currentRegion ? 'active' : ''}" data-region="${r}">
+      ${r} <span class="count">${count}</span>
+    </button>`;
+  }).join('');
+
+  nav.querySelectorAll('.region-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentRegion = btn.dataset.region;
+      buildRegionNav();
+      buildSummaryGrid();
+      renderTable();
+    });
+  });
+}
+
+// Build summary grid (show only when "All")
+function buildSummaryGrid() {
+  const grid = document.getElementById('summaryGrid');
+  if (currentRegion !== 'All') {
+    grid.style.display = 'none';
+    return;
+  }
+  grid.style.display = 'grid';
+  grid.innerHTML = SUMMARY.map(s => `
+    <div class="region-summary-card" data-r="${s.region}">
+      <h3>${s.region}</h3>
+      <div class="metrics">
+        <div class="metric"><span class="num" style="color:var(--text)">${s.countries}</span><span class="lbl">Countries</span></div>
+        <div class="metric"><span class="num" style="color:var(--bank)">${s.bank}</span><span class="lbl">Bank</span></div>
+        <div class="metric"><span class="num" style="color:var(--wallet)">${s.wallet}</span><span class="lbl">Wallet</span></div>
+      </div>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.region-summary-card').forEach(card => {
+    card.addEventListener('click', () => {
+      currentRegion = card.dataset.r;
+      buildRegionNav();
+      buildSummaryGrid();
+      renderTable();
+    });
+  });
+}
+
+function isRealTime(delivery) {
+  return /real.?time/i.test(delivery);
+}
+
+function getPenetrationNum(p) {
+  if (!p) return 0;
+  return parseFloat(p.replace('%', '')) || 0;
+}
+
+function renderTable() {
+  let data = currentRegion === 'All' ? allData : allData.filter(r => r.region === currentRegion);
+
+  if (currentChannel !== 'all') {
+    data = data.filter(r => r.channel === currentChannel);
+  }
+
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    data = data.filter(r =>
+      r.country.toLowerCase().includes(q) ||
+      r.currency.toLowerCase().includes(q) ||
+      r.partners.toLowerCase().includes(q) ||
+      r.channel.toLowerCase().includes(q) ||
+      r.region.toLowerCase().includes(q)
+    );
+  }
+
+  if (sortCol) {
+    data = [...data].sort((a, b) => {
+      let av = a[sortCol] || '', bv = b[sortCol] || '';
+      if (sortCol === 'penetration') { av = getPenetrationNum(av); bv = getPenetrationNum(bv); return (av - bv) * sortDir; }
+      return av.localeCompare(bv) * sortDir;
+    });
+  }
+
+  const title = currentRegion === 'All' ? 'All Regions' : currentRegion;
+  document.getElementById('tableTitle').textContent = title;
+  document.getElementById('resultCount').textContent = data.length;
+
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+
+  if (data.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = data.map(r => {
+    const pct = getPenetrationNum(r.penetration);
+    const ch = r.channel.toLowerCase();
+    const rt = isRealTime(r.delivery);
+    return `<tr>
+      <td>
+        <div class="country-cell">${r.country}</div>
+        ${currentRegion === 'All' ? `<div class="region-tag" style="margin-top:3px">${r.region}</div>` : ''}
+      </td>
+      <td><span class="channel-badge ${ch}">${r.channel}</span></td>
+      <td><span class="currency-pill">${r.currency}</span></td>
+      <td class="fee-cell">${r.fee}</td>
+      <td class="partners-cell">${r.partners || '—'}</td>
+      <td class="limits-cell">${r.limits || '—'}</td>
+      <td class="delivery-cell">
+        ${rt ? `<span class="delivery-badge rt">⚡ Real Time</span>` : ''}
+        ${!rt && r.delivery ? `<span style="font-size:11px;color:var(--muted)">${r.delivery.split(' | ')[0]}</span>` : ''}
+        ${!r.delivery ? '—' : ''}
+      </td>
+      <td>
+        <div class="penetration-bar-wrap">
+          <div class="penetration-bar"><div class="penetration-fill" style="width:${pct}%"></div></div>
+          <span class="penetration-val">${r.penetration || '—'}</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// Sort headers
+document.querySelectorAll('thead th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) { sortDir *= -1; }
+    else { sortCol = col; sortDir = 1; }
+    document.querySelectorAll('thead th').forEach(t => t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    th.querySelector('.sort-icon').textContent = sortDir === 1 ? '↑' : '↓';
+    renderTable();
+  });
+});
+
+// Channel filter
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentChannel = btn.dataset.channel;
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.remove('active', 'wallet-active', 'card-active');
+    });
+    if (currentChannel === 'Wallet') btn.classList.add('wallet-active');
+    else if (currentChannel === 'Card') btn.classList.add('card-active');
+    else btn.classList.add('active');
+    renderTable();
+  });
+});
+
+// Search
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQuery = e.target.value.trim();
+  renderTable();
+});
+
+// Init
+buildStats();
+buildRegionNav();
+buildSummaryGrid();
+renderTable();
+</script>
+</body>
+</html>

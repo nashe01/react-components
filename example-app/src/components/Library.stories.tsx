@@ -86,10 +86,12 @@ const stackedHorizontalControlData: NonNullable<
 const scrollStackCardsControlData: NonNullable<ScrollStackCardsProps["cards"]> = [
   {
     id: "strategy",
-    eyebrow: "Phase 01",
     title: "Define your launch strategy",
     description:
       "Shape your positioning, audience, and rollout plan with a clear narrative your team can execute.",
+    imageUrl:
+      "https://placehold.co/1200x800/022731/ffffff?text=Placeholder+Image+1",
+    imageAlt: "Placeholder image 1",
     primaryCtaLabel: "Book strategy call",
     primaryCtaHref: "#strategy",
     secondaryCtaLabel: "See framework",
@@ -97,10 +99,12 @@ const scrollStackCardsControlData: NonNullable<ScrollStackCardsProps["cards"]> =
   },
   {
     id: "design",
-    eyebrow: "Phase 02",
     title: "Craft a message that converts",
     description:
       "Turn ideas into concise copy blocks and visual direction your users understand in seconds.",
+    imageUrl:
+      "https://placehold.co/1200x800/022731/ffffff?text=Placeholder+Image+2",
+    imageAlt: "Placeholder image 2",
     primaryCtaLabel: "Review messaging",
     primaryCtaHref: "#messaging",
     secondaryCtaLabel: "Get examples",
@@ -108,10 +112,12 @@ const scrollStackCardsControlData: NonNullable<ScrollStackCardsProps["cards"]> =
   },
   {
     id: "build",
-    eyebrow: "Phase 03",
     title: "Build and ship with confidence",
     description:
       "Ship faster with component-ready tasks, clear owners, and measurable release checkpoints.",
+    imageUrl:
+      "https://placehold.co/1200x800/022731/ffffff?text=Placeholder+Image+3",
+    imageAlt: "Placeholder image 3",
     primaryCtaLabel: "Start implementation",
     primaryCtaHref: "#implementation",
     secondaryCtaLabel: "View timeline",
